@@ -29,6 +29,8 @@ import javax.inject.Inject;
 import com.google.inject.Provides;
 
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 
@@ -44,14 +46,34 @@ public class SnakeWeedHelperPlugin extends Plugin
 	@Inject
 	private SnakeWeedHelperConfig config;
 
+	@Inject
+	private TickLogger tickLogger;
+
 	@Override
 	protected void startUp()
 	{
+		if (config.tickLogger())
+			tickLogger.start();
 	}
 
 	@Override
 	protected void shutDown()
 	{
+		tickLogger.stop();
+	}
+
+	/** Starts or stops the tick logger as its setting is toggled. */
+	@Subscribe
+	public void onConfigChanged(ConfigChanged event)
+	{
+		if (!SnakeWeedHelperConfig.GROUP.equals(event.getGroup())
+			|| !SnakeWeedHelperConfig.TICK_LOGGER.equals(event.getKey()))
+			return;
+
+		if (config.tickLogger())
+			tickLogger.start();
+		else
+			tickLogger.stop();
 	}
 
 	@Provides
