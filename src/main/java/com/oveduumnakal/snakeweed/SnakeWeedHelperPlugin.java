@@ -24,6 +24,7 @@
  */
 package com.oveduumnakal.snakeweed;
 
+import java.util.Collections;
 import javax.inject.Inject;
 
 import com.google.inject.Provides;
@@ -31,9 +32,11 @@ import com.google.inject.Provides;
 import net.runelite.api.Client;
 import net.runelite.api.GameObject;
 import net.runelite.api.GameState;
+import net.runelite.api.Player;
 import net.runelite.api.Scene;
 import net.runelite.api.Tile;
 import net.runelite.api.WorldView;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.GameObjectDespawned;
 import net.runelite.api.events.GameObjectSpawned;
 import net.runelite.api.events.GameStateChanged;
@@ -74,6 +77,15 @@ public class SnakeWeedHelperPlugin extends Plugin
 	private VineHighlightOverlay vineOverlay;
 
 	@Inject
+	private RouteOverlay routeOverlay;
+
+	@Inject
+	private RouteService routeService;
+
+	@Inject
+	private ShortestPathBridge shortestPath;
+
+	@Inject
 	private TickLogger tickLogger;
 
 	/** True from a scene starting to load until the next tick, so the vines it brings are not read as picks. */
@@ -83,6 +95,7 @@ public class SnakeWeedHelperPlugin extends Plugin
 	protected void startUp()
 	{
 		overlayManager.add(vineOverlay);
+		overlayManager.add(routeOverlay);
 		clientThread.invokeLater(this::restoreScene);
 		if (config.tickLogger())
 			tickLogger.start();
@@ -92,15 +105,28 @@ public class SnakeWeedHelperPlugin extends Plugin
 	protected void shutDown()
 	{
 		overlayManager.remove(vineOverlay);
+		overlayManager.remove(routeOverlay);
+		shortestPath.clear();
+		routeService.reset();
 		vineTracker.clear();
 		tickLogger.stop();
 	}
 
-	/** Ends the scene-loading window once the tick after a load arrives. */
+	/** Ends the scene-loading window once the tick after a load arrives, then re-plans the route. */
 	@Subscribe
 	public void onGameTick(GameTick event)
 	{
 		sceneLoading = false;
+		if (!config.showNextVine() && !config.useShortestPath())
+			return;
+
+		routeService.update(client.getTickCount());
+		Player me = client.getLocalPlayer();
+		WorldPoint approach = routeService.getApproach();
+		if (me != null && approach != null)
+			shortestPath.show(me.getWorldLocation(), Collections.singleton(approach));
+		else
+			shortestPath.clear();
 	}
 
 	/** Starts the scene-loading window, and forgets the vines when the player leaves the world. */
@@ -128,12 +154,17 @@ public class SnakeWeedHelperPlugin extends Plugin
 		vineTracker.untrack(event.getGameObject());
 	}
 
-	/** Starts or stops the tick logger as its setting is toggled. */
+	/** Starts or stops the tick logger, and removes the route, as their settings are toggled. */
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
-		if (!SnakeWeedHelperConfig.GROUP.equals(event.getGroup())
-			|| !SnakeWeedHelperConfig.TICK_LOGGER.equals(event.getKey()))
+		if (!SnakeWeedHelperConfig.GROUP.equals(event.getGroup()))
+			return;
+
+		if (SnakeWeedHelperConfig.USE_SHORTEST_PATH.equals(event.getKey()) && !config.useShortestPath())
+			shortestPath.clear();
+
+		if (!SnakeWeedHelperConfig.TICK_LOGGER.equals(event.getKey()))
 			return;
 
 		if (config.tickLogger())

@@ -31,6 +31,7 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.ConfigSection;
+import net.runelite.client.config.Range;
 
 /** Settings for Snake Weed Helper; sections are added as each feature lands. */
 @ConfigGroup(SnakeWeedHelperConfig.GROUP)
@@ -38,6 +39,9 @@ public interface SnakeWeedHelperConfig extends Config
 {
 	/** Config group key, shared with the plugin so both agree on where settings are stored. */
 	String GROUP = "snakeweedhelper";
+
+	/** Key of the Shortest Path toggle, watched by the plugin so a route is removed when it is switched off. */
+	String USE_SHORTEST_PATH = "useShortestPath";
 
 	/** Key of the tick-logger toggle, watched by the plugin so the logger starts and stops live. */
 	String TICK_LOGGER = "tickLogger";
@@ -49,6 +53,14 @@ public interface SnakeWeedHelperConfig extends Config
 		position = 0
 	)
 	String vinesSection = "vines";
+
+	/** Which vine to go to next, and how the route to it is shown. */
+	@ConfigSection(
+		name = "Route",
+		description = "Which vine to go to next, and how the route to it is shown.",
+		position = 1
+	)
+	String routeSection = "route";
 
 	/** Tools for measuring game mechanics; not part of normal play. */
 	@ConfigSection(
@@ -108,6 +120,58 @@ public interface SnakeWeedHelperConfig extends Config
 	default boolean glow()
 	{
 		return true;
+	}
+
+	@ConfigItem(
+		keyName = USE_SHORTEST_PATH,
+		name = "Use 'Shortest Path' plugin",
+		description = "If you have the 'Shortest Path' plugin downloaded, it will be used to show routes to the "
+			+ "next vine and the bank",
+		section = routeSection,
+		position = 0
+	)
+	default boolean useShortestPath()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "showNextVine",
+		name = "Mark next vine",
+		description = "Rings the vine the planner says to search next.",
+		section = routeSection,
+		position = 1
+	)
+	default boolean showNextVine()
+	{
+		return true;
+	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "targetColor",
+		name = "Next vine",
+		description = "Color of the ring on the vine to search next.",
+		section = routeSection,
+		position = 2
+	)
+	default Color targetColor()
+	{
+		return new Color(0, 200, 255, 230);
+	}
+
+	@Range(min = 1, max = 20)
+	@ConfigItem(
+		keyName = "searchTicks",
+		name = "Ticks per search",
+		description = "How many game ticks one search takes you, which the planner uses to weigh walking "
+			+ "against waiting for a vine to grow back.",
+		section = routeSection,
+		position = 3
+	)
+	default int searchTicks()
+	{
+		return 3;
 	}
 
 	@ConfigItem(

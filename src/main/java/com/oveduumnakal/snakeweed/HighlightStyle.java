@@ -42,6 +42,9 @@ final class HighlightStyle
 	/** The border every highlight is drawn with. */
 	private static final Stroke BORDER = new BasicStroke(2f);
 
+	/** The thicker border of a ring that marks a target. */
+	private static final Stroke RING = new BasicStroke(3f);
+
 	private HighlightStyle()
 	{
 	}
@@ -81,6 +84,24 @@ final class HighlightStyle
 		graphics.fill(shape);
 		graphics.setColor(edge);
 		graphics.setStroke(BORDER);
+		graphics.draw(shape);
+	}
+
+	/**
+	 * Borders a shape with a thick unfilled ring, to mark a target without hiding what is under it. Draws nothing
+	 * for a missing shape.
+	 *
+	 * @param graphics the graphics to draw on
+	 * @param shape    the shape, or {@code null}
+	 * @param color    the ring color
+	 */
+	static void drawRing(Graphics2D graphics, Shape shape, Color color)
+	{
+		if (shape == null)
+			return;
+
+		graphics.setColor(color);
+		graphics.setStroke(RING);
 		graphics.draw(shape);
 	}
 
