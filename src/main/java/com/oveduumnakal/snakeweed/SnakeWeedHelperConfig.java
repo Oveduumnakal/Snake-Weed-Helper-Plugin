@@ -24,6 +24,9 @@
  */
 package com.oveduumnakal.snakeweed;
 
+import java.awt.Color;
+
+import net.runelite.client.config.Alpha;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
@@ -39,6 +42,14 @@ public interface SnakeWeedHelperConfig extends Config
 	/** Key of the tick-logger toggle, watched by the plugin so the logger starts and stops live. */
 	String TICK_LOGGER = "tickLogger";
 
+	/** How vines you can and cannot search are drawn. */
+	@ConfigSection(
+		name = "Vines",
+		description = "How vines you can and cannot search are drawn.",
+		position = 0
+	)
+	String vinesSection = "vines";
+
 	/** Tools for measuring game mechanics; not part of normal play. */
 	@ConfigSection(
 		name = "Developer",
@@ -47,6 +58,57 @@ public interface SnakeWeedHelperConfig extends Config
 		closedByDefault = true
 	)
 	String developerSection = "developer";
+
+	@Alpha
+	@ConfigItem(
+		keyName = "ripeColor",
+		name = "Ripe vine",
+		description = "Color of a vine you can search.",
+		section = vinesSection,
+		position = 0
+	)
+	default Color ripeColor()
+	{
+		return new Color(46, 219, 90, 230);
+	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "greyColor",
+		name = "Vine to skip",
+		description = "Color of a vine that cannot be searched yet.",
+		section = vinesSection,
+		position = 1
+	)
+	default Color greyColor()
+	{
+		return new Color(140, 140, 140, 190);
+	}
+
+	@ConfigItem(
+		keyName = "showCountdown",
+		name = "Show regrow countdown",
+		description = "Shows the seconds left on a vine that cannot be searched. A tilde means the time is a "
+			+ "guess because the vine was already picked when first seen.",
+		section = vinesSection,
+		position = 2
+	)
+	default boolean showCountdown()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "glow",
+		name = "Glow ripe vines",
+		description = "Pulses the highlight on vines you can search. Off keeps it steady.",
+		section = vinesSection,
+		position = 3
+	)
+	default boolean glow()
+	{
+		return true;
+	}
 
 	@ConfigItem(
 		keyName = TICK_LOGGER,
