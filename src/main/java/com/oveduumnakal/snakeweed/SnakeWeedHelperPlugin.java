@@ -46,11 +46,11 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
 
-/** Entry point: wires the vine tracker, fail prompt, routes and overlays as the phases land. */
+/** Entry point: wires the vine tracker, next-vine planner, hints and overlays. */
 @PluginDescriptor(
 	name = "Snake Weed Helper",
-	description = "Greys out vines you cannot search, prompts a click-away after a failed search, and routes you "
-		+ "between vines and the bank with Shortest Path",
+	description = "Greys out vines you cannot search, prompts a click-away after a failed search, and marks the "
+		+ "best vine to search next",
 	tags = {"snake", "weed", "herblore", "karamja", "tai bwo wannai", "sanfew", "overlay", "route", "3tick"}
 )
 public class SnakeWeedHelperPlugin extends Plugin
@@ -83,22 +83,10 @@ public class SnakeWeedHelperPlugin extends Plugin
 	private RouteService routeService;
 
 	@Inject
-	private TripRouter tripRouter;
-
-	@Inject
 	private HintService hintService;
 
 	@Inject
 	private HintOverlay hintOverlay;
-
-	@Inject
-	private KnownVines knownVines;
-
-	@Inject
-	private ConfigManager configManager;
-
-	@Inject
-	private ShortestPathBridge shortestPath;
 
 	@Inject
 	private TickLogger tickLogger;
@@ -112,7 +100,6 @@ public class SnakeWeedHelperPlugin extends Plugin
 		overlayManager.add(vineOverlay);
 		overlayManager.add(routeOverlay);
 		overlayManager.add(hintOverlay);
-		knownVines.load(config.knownVines());
 		clientThread.invokeLater(this::restoreScene);
 		if (config.tickLogger())
 			tickLogger.start();
@@ -125,25 +112,21 @@ public class SnakeWeedHelperPlugin extends Plugin
 		overlayManager.remove(routeOverlay);
 		overlayManager.remove(hintOverlay);
 		hintService.reset();
-		shortestPath.clear();
 		routeService.reset();
-		tripRouter.reset();
 		vineTracker.clear();
 		tickLogger.stop();
 	}
 
-	/** Ends the scene-loading window once the tick after a load arrives, then updates the trip and its route. */
+	/** Ends the scene-loading window once the tick after a load arrives, then re-plans the next vine. */
 	@Subscribe
 	public void onGameTick(GameTick event)
 	{
 		tickClock.onTick();
 		sceneLoading = false;
-		if (knownVines.takeChanged())
-			configManager.setConfiguration(SnakeWeedHelperConfig.GROUP, SnakeWeedHelperConfig.KNOWN_VINES,
-				knownVines.save());
-
-		if (config.showNextVine() || config.useShortestPath() || config.bankTrips())
-			tripRouter.update(client.getTickCount());
+		if (config.showNextVine())
+			routeService.update(client.getTickCount());
+		else
+			routeService.reset();
 
 		hintService.update(client.getTickCount());
 	}
@@ -159,7 +142,7 @@ public class SnakeWeedHelperPlugin extends Plugin
 		if (state == GameState.LOGIN_SCREEN || state == GameState.HOPPING)
 		{
 			vineTracker.clear();
-			tripRouter.reset();
+			routeService.reset();
 			hintService.reset();
 		}
 	}
@@ -170,8 +153,6 @@ public class SnakeWeedHelperPlugin extends Plugin
 	{
 		GameObject object = event.getGameObject();
 		vineTracker.track(object, client.getTickCount(), isLive());
-		if (SnakeWeedIds.isVine(object.getId()))
-			knownVines.add(object.getWorldLocation());
 	}
 
 	/** Lets go of a vine object that left the scene. */
@@ -181,21 +162,12 @@ public class SnakeWeedHelperPlugin extends Plugin
 		vineTracker.untrack(event.getGameObject());
 	}
 
-	/** Starts or stops the tick logger, and removes the route, as their settings are toggled. */
+	/** Starts or stops the tick logger as its setting is toggled. */
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
 		if (!SnakeWeedHelperConfig.GROUP.equals(event.getGroup()))
 			return;
-
-		if (SnakeWeedHelperConfig.USE_SHORTEST_PATH.equals(event.getKey()) && !config.useShortestPath())
-			shortestPath.clear();
-
-		if (SnakeWeedHelperConfig.BANK_TRIPS.equals(event.getKey()) && !config.bankTrips())
-		{
-			tripRouter.reset();
-			shortestPath.clear();
-		}
 
 		if (!SnakeWeedHelperConfig.TICK_LOGGER.equals(event.getKey()))
 			return;
@@ -248,17 +220,9 @@ public class SnakeWeedHelperPlugin extends Plugin
 			for (GameObject object : tile.getGameObjects())
 			{
 				if (object != null)
-					trackBaseline(object, tick);
+					vineTracker.track(object, tick, false);
 			}
 		}
-	}
-
-	/** Feeds a scene object to the tracker as a baseline, and remembers it if it is a vine. */
-	private void trackBaseline(GameObject object, int tick)
-	{
-		vineTracker.track(object, tick, false);
-		if (SnakeWeedIds.isVine(object.getId()))
-			knownVines.add(object.getWorldLocation());
 	}
 
 	@Provides

@@ -1,6 +1,6 @@
 <h1 align="center">Snake Weed Helper</h1>
 
-Snake Weed Helper is a RuneLite plugin that makes harvesting snake weed with the 3-tick mahogany method faster and less error-prone. It shows which vines you can search, tells you the moment a search failed, and routes you between the vines and the bank.
+Snake Weed Helper is a RuneLite plugin that makes harvesting snake weed with the 3-tick mahogany method faster and less error-prone. It shows which vines you can search, tells you the moment a search failed, and marks the best vine to search next.
 
 ## Features
 
@@ -18,14 +18,9 @@ Snake Weed Helper is a RuneLite plugin that makes harvesting snake weed with the
 
 ### Routes
 
-- **Next vine and bank trips**
+- **Next vine**
 
-  Uses the Shortest Path plugin to route you to the best next vine, to the quickest bank when your inventory is full, and back to the vines after you empty it.
-
-## Credits
-
-- Routes are drawn by the [Shortest Path](https://github.com/Skretzo/shortest-path) plugin. Install it to see them.
-- The bank list is adapted from Shortest Path's bank data (BSD 2-Clause).
+  Rings the vine to search next, picked from where you stand by the real walking distance and by which vines will have grown back by the time you arrive.
 
 ## Links
 

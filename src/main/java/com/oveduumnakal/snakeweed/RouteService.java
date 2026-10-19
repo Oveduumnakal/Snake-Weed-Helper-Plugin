@@ -50,7 +50,6 @@ class RouteService
 	private final VineTracker tracker;
 
 	private WorldPoint nextVine;
-	private WorldPoint approach;
 	private List<WorldPoint> cachedSites = new ArrayList<>();
 	private int cachedBaseX = -1;
 	private int cachedBaseY = -1;
@@ -70,17 +69,10 @@ class RouteService
 		return nextVine;
 	}
 
-	/** The open tile beside the next vine to walk to, or {@code null} when already beside it or there is none. */
-	WorldPoint getApproach()
-	{
-		return approach;
-	}
-
 	/** Forgets the plan, for when the player leaves the vines. */
 	void reset()
 	{
 		nextVine = null;
-		approach = null;
 	}
 
 	/**
@@ -130,13 +122,7 @@ class RouteService
 		if (plan.isEmpty())
 			return;
 
-		int[] site = sites.get(plan.get(0));
 		nextVine = vines.get(plan.get(0)).getTile();
-		if (walk.stepsToTouch(fromMe, site[0], site[1]) > 0)
-		{
-			int[] side = walk.approachTile(fromMe, site[0], site[1]);
-			approach = WorldPoint.fromScene(view, side[0], side[1], view.getPlane());
-		}
 	}
 
 	/** The walk between vines, recomputed only when the vines or the scene have changed. */

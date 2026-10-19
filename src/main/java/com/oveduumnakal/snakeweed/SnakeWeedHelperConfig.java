@@ -40,15 +40,6 @@ public interface SnakeWeedHelperConfig extends Config
 	/** Config group key, shared with the plugin so both agree on where settings are stored. */
 	String GROUP = "snakeweedhelper";
 
-	/** Key of the Shortest Path toggle, watched by the plugin so a route is removed when it is switched off. */
-	String USE_SHORTEST_PATH = "useShortestPath";
-
-	/** Key of the bank-trips toggle, watched by the plugin so a trip is dropped when it is switched off. */
-	String BANK_TRIPS = "bankTrips";
-
-	/** Key of the hidden list of vine tiles seen so far, which the way back to the vines is routed to. */
-	String KNOWN_VINES = "knownVines";
-
 	/** Key of the tick-logger toggle, watched by the plugin so the logger starts and stops live. */
 	String TICK_LOGGER = "tickLogger";
 
@@ -60,27 +51,19 @@ public interface SnakeWeedHelperConfig extends Config
 	)
 	String vinesSection = "vines";
 
-	/** Which vine to go to next, and how the route to it is shown. */
+	/** Which vine to search next. */
 	@ConfigSection(
 		name = "Route",
-		description = "Which vine to go to next, and how the route to it is shown.",
+		description = "Which vine to search next.",
 		position = 1
 	)
 	String routeSection = "route";
-
-	/** Trips to the bank when the backpack is full of snake weed. */
-	@ConfigSection(
-		name = "Banking",
-		description = "Trips to the bank when the backpack is full of snake weed.",
-		position = 2
-	)
-	String bankingSection = "banking";
 
 	/** Short warnings shown while you are at the vines. */
 	@ConfigSection(
 		name = "Hints",
 		description = "Short warnings shown while you are at the vines.",
-		position = 3
+		position = 2
 	)
 	String hintsSection = "hints";
 
@@ -145,24 +128,11 @@ public interface SnakeWeedHelperConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = USE_SHORTEST_PATH,
-		name = "Use 'Shortest Path' plugin",
-		description = "If you have the 'Shortest Path' plugin downloaded, it will be used to show routes to the "
-			+ "next vine and the bank",
-		section = routeSection,
-		position = 0
-	)
-	default boolean useShortestPath()
-	{
-		return true;
-	}
-
-	@ConfigItem(
 		keyName = "showNextVine",
 		name = "Mark next vine",
 		description = "Rings the vine the planner says to search next.",
 		section = routeSection,
-		position = 1
+		position = 0
 	)
 	default boolean showNextVine()
 	{
@@ -175,7 +145,7 @@ public interface SnakeWeedHelperConfig extends Config
 		name = "Next vine",
 		description = "Color of the ring on the vine to search next.",
 		section = routeSection,
-		position = 2
+		position = 1
 	)
 	default Color targetColor()
 	{
@@ -189,49 +159,11 @@ public interface SnakeWeedHelperConfig extends Config
 		description = "How many game ticks one search takes you, which the planner uses to weigh walking "
 			+ "against waiting for a vine to grow back.",
 		section = routeSection,
-		position = 3
+		position = 2
 	)
 	default int searchTicks()
 	{
 		return 3;
-	}
-
-	@ConfigItem(
-		keyName = BANK_TRIPS,
-		name = "Bank trips",
-		description = "When your backpack is full of snake weed, shows the route to the nearest bank you can use, "
-			+ "then the way back to the vines once you have emptied it. Needs the 'Shortest Path' plugin.",
-		section = bankingSection,
-		position = 0
-	)
-	default boolean bankTrips()
-	{
-		return true;
-	}
-
-	@Range(min = 0, max = 27)
-	@ConfigItem(
-		keyName = "bankWhenFreeSlots",
-		name = "Bank at free slots",
-		description = "The trip to the bank starts when you have this many empty slots or fewer. 0 means a "
-			+ "completely full backpack.",
-		section = bankingSection,
-		position = 1
-	)
-	default int bankWhenFreeSlots()
-	{
-		return 0;
-	}
-
-	@ConfigItem(
-		keyName = KNOWN_VINES,
-		name = "Known vines",
-		description = "The vine tiles seen so far.",
-		hidden = true
-	)
-	default String knownVines()
-	{
-		return "";
 	}
 
 	@ConfigItem(

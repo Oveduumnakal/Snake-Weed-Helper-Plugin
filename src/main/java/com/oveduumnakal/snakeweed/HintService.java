@@ -48,20 +48,21 @@ class HintService
 	/** Tiles around the player within which another player counts as nearby. */
 	static final int NEARBY_RADIUS = 15;
 
+	/** Tiles from a seen vine within which the player counts as being at the vines. */
+	static final int NEAR_VINES = 12;
+
 	private final Client client;
 	private final SnakeWeedHelperConfig config;
 	private final VineTracker tracker;
-	private final KnownVines knownVines;
 
 	private List<String> lines = Collections.emptyList();
 
 	@Inject
-	HintService(Client client, SnakeWeedHelperConfig config, VineTracker tracker, KnownVines knownVines)
+	HintService(Client client, SnakeWeedHelperConfig config, VineTracker tracker)
 	{
 		this.client = client;
 		this.config = config;
 		this.tracker = tracker;
-		this.knownVines = knownVines;
 	}
 
 	/** The warnings to show now, empty when there are none. */
@@ -84,8 +85,7 @@ class HintService
 	void update(int tick)
 	{
 		Player me = client.getLocalPlayer();
-		if (me == null || knownVines.tiles().isEmpty() || !knownVines.isNear(me.getWorldLocation(),
-			TripRouter.NEAR_VINES))
+		if (me == null || !nearVines(me.getWorldLocation()))
 		{
 			reset();
 			return;
@@ -104,6 +104,18 @@ class HintService
 			next.add("Crowded: consider hopping worlds");
 
 		lines = next;
+	}
+
+	/** Whether a vine has been seen within {@link #NEAR_VINES} tiles, so the hints stay quiet away from the vines. */
+	private boolean nearVines(WorldPoint here)
+	{
+		for (Vine vine : tracker.all())
+		{
+			if (vine.getTile().distanceTo(here) <= NEAR_VINES)
+				return true;
+		}
+
+		return false;
 	}
 
 	/** The item ids in the backpack, {@code -1} for empty slots. */

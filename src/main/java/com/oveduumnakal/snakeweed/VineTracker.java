@@ -37,7 +37,7 @@ import net.runelite.api.coords.WorldPoint;
 /**
  * Remembers every vine seen, and whether it can be searched. A vine seen changing while in view is timed exactly; a
  * vine first seen already picked (login, a new scene, or being picked out of view) is only estimated. Vines stay
- * remembered after they leave the scene, so their timers keep counting while the player is at the bank.
+ * remembered after they leave the scene, so their timers keep counting while the player is away.
  */
 @Singleton
 class VineTracker
