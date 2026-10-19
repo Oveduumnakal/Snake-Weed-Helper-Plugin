@@ -35,8 +35,11 @@ final class SnakeWeedIds
 	/** A picked vine, which is growing back. */
 	static final int VINE_PICKED = ObjectID.SNAKE_VINE_EMPTY;
 
-	/** Ticks a picked vine takes to grow back: 60 seconds (wiki; Phase 1 confirms it in game). */
-	static final int REGROW_TICKS = 100;
+	/**
+	 * Ticks a picked vine takes to grow back. Measured in game: the ripe object appeared 99 ticks after the picked
+	 * one in all 24 regrowths logged (the wiki's 60 seconds is 100).
+	 */
+	static final int REGROW_TICKS = 99;
 
 	/** Ticks a vine first seen picked is guessed to need: half the regrow time, as the picking was not seen. */
 	static final int UNKNOWN_RIPE_TICKS = REGROW_TICKS / 2;

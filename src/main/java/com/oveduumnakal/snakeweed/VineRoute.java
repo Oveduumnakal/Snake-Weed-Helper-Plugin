@@ -32,13 +32,17 @@ import java.util.List;
  * Pure planner that picks which vine to search next. It tries every order of the next few vines and keeps the one
  * that finishes the last search soonest, counting both the walking and any wait for a vine to grow back, so it
  * prefers a farther ripe vine to a nearer one that is still growing, and a vine that leaves the next one close by
- * to one that leaves it far away. Ties go to the order that walks least, then to the lower index. Works on plain
+ * to one that leaves it far away. The first leg is priced from the player's own tile, and each later leg from the
+ * tile the walk before it ends on. Ties go to the order that walks least, then to the lower index. Works on plain
  * arrays so it is unit-testable without a client.
  */
 final class VineRoute
 {
-	/** How many vines ahead the planner looks. */
+	/** How many vines ahead the planner looks unless told otherwise. */
 	static final int DEPTH = 3;
+
+	/** Passed as {@code forced} when no vine has been chosen yet. */
+	static final int NONE = -1;
 
 	private VineRoute()
 	{
@@ -47,30 +51,46 @@ final class VineRoute
 	/**
 	 * Plans the next vines to search.
 	 *
-	 * @param startTicks ticks to walk from the player to beside each vine; {@link WalkDistance#UNREACHABLE} skips it
-	 * @param between    {@code between[i][j]}: ticks to walk from beside vine i to beside vine j
-	 * @param ripeAt     the tick each vine is, or is expected to be, ripe from
-	 * @param now        the current game tick
+	 * @param legs        the walk between standing tiles and vines, whose start row is the player's tile
+	 * @param ripeAt      the tick each vine is, or is expected to be, ripe from
+	 * @param now         the current game tick
 	 * @param searchTicks ticks one search takes once at a vine
-	 * @param depth      how many vines ahead to plan, at most
-	 * @return the vine indexes in the order to search them; empty when none can be reached
+	 * @param depth       how many vines to plan after the forced one, at most
+	 * @param forced      a vine the player is already searching or walking to, planned first so the vines after it
+	 *                    are priced from beside it, or {@link #NONE}
+	 * @return the vine indexes in the order to search them, starting with the forced one when it can be reached;
+	 *         empty when none can be reached
 	 */
-	static List<Integer> plan(int[] startTicks, int[][] between, int[] ripeAt, int now, int searchTicks, int depth)
+	static List<Integer> plan(WalkTable.Legs legs, int[] ripeAt, int now, int searchTicks, int depth, int forced)
 	{
+		int[] fromStart = legs.cost()[legs.start()];
 		List<Integer> reachable = new ArrayList<>();
-		for (int i = 0; i < startTicks.length; i++)
+		for (int i = 0; i < fromStart.length; i++)
 		{
-			if (startTicks[i] != WalkDistance.UNREACHABLE)
+			if (fromStart[i] != WalkDistance.UNREACHABLE)
 				reachable.add(i);
 		}
 
-		int length = Math.min(depth, reachable.size());
-		if (length <= 0)
+		boolean pinned = forced != NONE && reachable.contains(forced);
+		int length = Math.min(depth, reachable.size() - (pinned ? 1 : 0));
+		if (length <= 0 && !pinned)
 			return Collections.emptyList();
 
-		Search search = new Search(startTicks, between, ripeAt, searchTicks, reachable, length);
-		search.extend(new int[length], 0, now, 0, -1);
+		Search search = new Search(legs, ripeAt, searchTicks, reachable, Math.max(length, 0));
 		List<Integer> best = new ArrayList<>();
+		if (pinned)
+		{
+			int walk = fromStart[forced];
+			search.pin(forced);
+			search.extend(new int[Math.max(length, 0)], 0, Math.max(now + walk, ripeAt[forced]) + searchTicks, walk,
+				legs.arrive()[legs.start()][forced]);
+			best.add(forced);
+		}
+		else
+		{
+			search.extend(new int[length], 0, now, 0, legs.start());
+		}
+
 		for (int index : search.bestOrder)
 			best.add(index);
 
@@ -80,8 +100,7 @@ final class VineRoute
 	/** One depth-first search over visit orders, remembering the best order found so far. */
 	private static final class Search
 	{
-		private final int[] startTicks;
-		private final int[][] between;
+		private final WalkTable.Legs legs;
 		private final int[] ripeAt;
 		private final int searchTicks;
 		private final List<Integer> reachable;
@@ -91,19 +110,24 @@ final class VineRoute
 		private long bestWalk = Long.MAX_VALUE;
 		private int[] bestOrder = new int[0];
 
-		Search(int[] startTicks, int[][] between, int[] ripeAt, int searchTicks, List<Integer> reachable, int length)
+		Search(WalkTable.Legs legs, int[] ripeAt, int searchTicks, List<Integer> reachable, int length)
 		{
-			this.startTicks = startTicks;
-			this.between = between;
+			this.legs = legs;
 			this.ripeAt = ripeAt;
 			this.searchTicks = searchTicks;
 			this.reachable = reachable;
 			this.length = length;
-			this.used = new boolean[startTicks.length];
+			this.used = new boolean[ripeAt.length];
+		}
+
+		/** Marks a vine as already placed, so the search does not choose it again. */
+		void pin(int vine)
+		{
+			used[vine] = true;
 		}
 
 		/** Adds each unused vine as the next in the order, and records the order when it is full. */
-		void extend(int[] order, int placed, long time, long walked, int last)
+		void extend(int[] order, int placed, long time, long walked, int tile)
 		{
 			if (placed == length)
 			{
@@ -119,14 +143,14 @@ final class VineRoute
 
 			for (int vine : reachable)
 			{
-				int walk = last < 0 ? startTicks[vine] : between[last][vine];
+				int walk = legs.cost()[tile][vine];
 				if (used[vine] || walk == WalkDistance.UNREACHABLE)
 					continue;
 
 				long start = Math.max(time + walk, ripeAt[vine]);
 				used[vine] = true;
 				order[placed] = vine;
-				extend(order, placed + 1, start + searchTicks, walked + walk, vine);
+				extend(order, placed + 1, start + searchTicks, walked + walk, legs.arrive()[tile][vine]);
 				used[vine] = false;
 			}
 		}

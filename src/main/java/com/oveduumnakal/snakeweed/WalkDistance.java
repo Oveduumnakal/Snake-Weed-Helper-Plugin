@@ -190,7 +190,7 @@ final class WalkDistance
 		int[][] ticks = new int[sites.size()][sites.size()];
 		for (int i = 0; i < ticks.length; i++)
 		{
-			int[][] distance = from(neighbours(sites.get(i)[0], sites.get(i)[1]));
+			int[][] distance = from(sides(sites.get(i)[0], sites.get(i)[1]));
 			for (int j = 0; j < ticks.length; j++)
 				ticks[i][j] = i == j ? 0 : ticks(stepsToTouch(distance, sites.get(j)[0], sites.get(j)[1]));
 		}
@@ -198,8 +198,14 @@ final class WalkDistance
 		return ticks;
 	}
 
-	/** The open tiles touching an object on a side. */
-	private List<int[]> neighbours(int x, int y)
+	/**
+	 * The open tiles touching an object on a side, which are the tiles it can be searched from.
+	 *
+	 * @param x the object's x
+	 * @param y the object's y
+	 * @return the tiles as {@code {x, y}}
+	 */
+	List<int[]> sides(int x, int y)
 	{
 		List<int[]> open = new ArrayList<>();
 		for (int[] step : DIRECTIONS)

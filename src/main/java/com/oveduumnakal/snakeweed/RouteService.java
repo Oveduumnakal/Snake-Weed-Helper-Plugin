@@ -32,6 +32,7 @@ import javax.inject.Singleton;
 import net.runelite.api.Client;
 import net.runelite.api.CollisionData;
 import net.runelite.api.GameState;
+import net.runelite.api.MenuAction;
 import net.runelite.api.Player;
 import net.runelite.api.WorldView;
 import net.runelite.api.coords.LocalPoint;
@@ -39,8 +40,10 @@ import net.runelite.api.coords.WorldPoint;
 
 /**
  * Works out, each tick, which vine to search next. It reads the vines in the loaded scene from {@link VineTracker},
- * measures the walk to each over the scene's collision data, and hands the numbers to {@link VineRoute}. The walk
- * between vines only changes when the set of vines or the scene does, so that matrix is kept between ticks.
+ * measures the walk to each from the tile the player stands on over the scene's collision data, and hands the
+ * numbers to {@link VineRoute}. While the player is searching a vine, or walking to one, that vine is planned first
+ * so the marker shows the vine after it. The walk between vines only changes when the set of vines or the scene
+ * does, so that table is kept between ticks.
  */
 @Singleton
 class RouteService
@@ -48,12 +51,13 @@ class RouteService
 	private final Client client;
 	private final SnakeWeedHelperConfig config;
 	private final VineTracker tracker;
+	private final SearchCommitment commitment = new SearchCommitment();
 
 	private WorldPoint nextVine;
 	private List<WorldPoint> cachedSites = new ArrayList<>();
 	private int cachedBaseX = -1;
 	private int cachedBaseY = -1;
-	private int[][] cachedBetween = new int[0][0];
+	private WalkTable cachedTable;
 
 	@Inject
 	RouteService(Client client, SnakeWeedHelperConfig config, VineTracker tracker)
@@ -69,10 +73,27 @@ class RouteService
 		return nextVine;
 	}
 
-	/** Forgets the plan, for when the player leaves the vines. */
+	/** Forgets the plan and the vine being searched, for when the player leaves the vines. */
 	void reset()
 	{
 		nextVine = null;
+		commitment.clear();
+	}
+
+	/**
+	 * Takes in a menu click, to learn which vine the player is searching.
+	 *
+	 * @param action   the clicked menu action
+	 * @param objectId the clicked object's id, when it was an object
+	 * @param sceneX   the clicked object's scene x
+	 * @param sceneY   the clicked object's scene y
+	 */
+	void onClick(MenuAction action, int objectId, int sceneX, int sceneY)
+	{
+		WorldView view = client.getTopLevelWorldView();
+		boolean search = action == MenuAction.GAME_OBJECT_SECOND_OPTION && SnakeWeedIds.isVine(objectId);
+		WorldPoint tile = search && view != null ? WorldPoint.fromScene(view, sceneX, sceneY, view.getPlane()) : null;
+		commitment.clicked(action, objectId, tile);
 	}
 
 	/**
@@ -82,7 +103,7 @@ class RouteService
 	 */
 	void update(int tick)
 	{
-		reset();
+		nextVine = null;
 		Player me = client.getLocalPlayer();
 		WorldView view = client.getTopLevelWorldView();
 		CollisionData[] maps = view == null ? null : view.getCollisionMaps();
@@ -108,38 +129,50 @@ class RouteService
 
 		WalkDistance walk = new WalkDistance(maps[view.getPlane()].getFlags());
 		LocalPoint mine = me.getLocalLocation();
-		int[][] fromMe = walk.from(mine.getSceneX(), mine.getSceneY());
-		int[] startTicks = new int[vines.size()];
+		WalkTable.Legs legs = table(walk, vines, sites, view).legsFrom(walk.from(mine.getSceneX(), mine.getSceneY()));
 		int[] ripeAt = new int[vines.size()];
-		for (int i = 0; i < startTicks.length; i++)
-		{
-			startTicks[i] = WalkDistance.ticks(walk.stepsToTouch(fromMe, sites.get(i)[0], sites.get(i)[1]));
+		for (int i = 0; i < ripeAt.length; i++)
 			ripeAt[i] = vines.get(i).getRipeAtTick();
-		}
 
-		List<Integer> plan = VineRoute.plan(startTicks, between(walk, vines, sites, view), ripeAt, tick,
-			config.searchTicks(), VineRoute.DEPTH);
-		if (plan.isEmpty())
-			return;
-
-		nextVine = vines.get(plan.get(0)).getTile();
+		int forced = forcedVine(me.getWorldLocation(), vines);
+		List<Integer> plan = VineRoute.plan(legs, ripeAt, tick, config.searchMethod().expectedTicks(),
+			config.lookahead(), forced);
+		int next = forced != VineRoute.NONE && !plan.isEmpty() && plan.get(0) == forced ? 1 : 0;
+		if (plan.size() > next)
+			nextVine = vines.get(plan.get(next)).getTile();
 	}
 
-	/** The walk between vines, recomputed only when the vines or the scene have changed. */
-	private int[][] between(WalkDistance walk, List<Vine> vines, List<int[]> sites, WorldView view)
+	/** The index of the vine the player is searching or walking to, or {@link VineRoute#NONE}. */
+	private int forcedVine(WorldPoint player, List<Vine> vines)
+	{
+		WorldPoint searching = commitment.vine();
+		Vine vine = searching == null ? null : tracker.get(searching);
+		WorldPoint kept = commitment.update(player, vine != null && vine.isSearchable());
+		for (int i = 0; kept != null && i < vines.size(); i++)
+		{
+			if (vines.get(i).getTile().equals(kept))
+				return i;
+		}
+
+		return VineRoute.NONE;
+	}
+
+	/** The walk table for these vines, recomputed only when the vines or the scene have changed. */
+	private WalkTable table(WalkDistance walk, List<Vine> vines, List<int[]> sites, WorldView view)
 	{
 		List<WorldPoint> tiles = new ArrayList<>();
 		for (Vine vine : vines)
 			tiles.add(vine.getTile());
 
-		if (!tiles.equals(cachedSites) || view.getBaseX() != cachedBaseX || view.getBaseY() != cachedBaseY)
+		if (cachedTable == null || !tiles.equals(cachedSites) || view.getBaseX() != cachedBaseX
+			|| view.getBaseY() != cachedBaseY)
 		{
-			cachedBetween = walk.ticksBetween(sites);
+			cachedTable = new WalkTable(walk, sites);
 			cachedSites = tiles;
 			cachedBaseX = view.getBaseX();
 			cachedBaseY = view.getBaseY();
 		}
 
-		return cachedBetween;
+		return cachedTable;
 	}
 }

@@ -38,6 +38,7 @@ import net.runelite.api.events.GameObjectDespawned;
 import net.runelite.api.events.GameObjectSpawned;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
+import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -129,6 +130,13 @@ public class SnakeWeedHelperPlugin extends Plugin
 			routeService.reset();
 
 		hintService.update(client.getTickCount());
+	}
+
+	/** Tells the planner which vine the player clicked to search, or that they turned to something else. */
+	@Subscribe
+	public void onMenuOptionClicked(MenuOptionClicked event)
+	{
+		routeService.onClick(event.getMenuAction(), event.getId(), event.getParam0(), event.getParam1());
 	}
 
 	/** Starts the scene-loading window, and forgets the vines when the player leaves the world. */

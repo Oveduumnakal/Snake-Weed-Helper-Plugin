@@ -152,18 +152,32 @@ public interface SnakeWeedHelperConfig extends Config
 		return new Color(0, 200, 255, 230);
 	}
 
-	@Range(min = 1, max = 20)
 	@ConfigItem(
-		keyName = "searchTicks",
-		name = "Ticks per search",
-		description = "How many game ticks one search takes you, which the planner uses to weigh walking "
-			+ "against waiting for a vine to grow back.",
+		keyName = "searchMethod",
+		name = "Search method",
+		description = "How you search the vines. The planner uses how long that takes to judge which vines will "
+			+ "have grown back by the time you reach them.",
 		section = routeSection,
 		position = 2
 	)
-	default int searchTicks()
+	default SearchMethod searchMethod()
 	{
-		return 3;
+		return SearchMethod.THREE_TICK;
+	}
+
+	@Range(min = 1, max = 4)
+	@ConfigItem(
+		keyName = "lookahead",
+		name = "Look ahead (vines)",
+		description = "How many vines after the current one the planner weighs. 1 picks the vine with the "
+			+ "shortest walk from where you stand; more can pick a slightly farther vine that leaves the next "
+			+ "ones close by.",
+		section = routeSection,
+		position = 3
+	)
+	default int lookahead()
+	{
+		return VineRoute.DEPTH;
 	}
 
 	@ConfigItem(
