@@ -98,6 +98,12 @@ public class SnakeWeedHelperPlugin extends Plugin
 	private SearchService searchService;
 
 	@Inject
+	private BankReminder bankReminder;
+
+	@Inject
+	private BankMarkerOverlay bankMarkerOverlay;
+
+	@Inject
 	private ClickAwayOverlay clickAwayOverlay;
 
 	@Inject
@@ -113,6 +119,7 @@ public class SnakeWeedHelperPlugin extends Plugin
 		overlayManager.add(routeOverlay);
 		overlayManager.add(hintOverlay);
 		overlayManager.add(clickAwayOverlay);
+		overlayManager.add(bankMarkerOverlay);
 		clientThread.invokeLater(this::restoreScene);
 		if (config.tickLogger())
 			tickLogger.start();
@@ -125,6 +132,8 @@ public class SnakeWeedHelperPlugin extends Plugin
 		overlayManager.remove(routeOverlay);
 		overlayManager.remove(hintOverlay);
 		overlayManager.remove(clickAwayOverlay);
+		overlayManager.remove(bankMarkerOverlay);
+		bankReminder.reset();
 		hintService.reset();
 		harvestNotifier.reset();
 		searchService.reset();
@@ -145,6 +154,7 @@ public class SnakeWeedHelperPlugin extends Plugin
 			routeService.reset();
 
 		hintService.update(client.getTickCount());
+		bankReminder.update();
 		searchService.onTick();
 	}
 
@@ -187,6 +197,7 @@ public class SnakeWeedHelperPlugin extends Plugin
 			vineTracker.clear();
 			routeService.reset();
 			hintService.reset();
+			bankReminder.reset();
 			harvestNotifier.reset();
 			searchService.reset();
 		}

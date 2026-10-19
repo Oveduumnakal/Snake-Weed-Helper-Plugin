@@ -51,14 +51,17 @@ class VineHighlightOverlay extends Overlay
 	private final SnakeWeedHelperConfig config;
 	private final VineTracker tracker;
 	private final TickClock tickClock;
+	private final BankReminder reminder;
 
 	@Inject
-	VineHighlightOverlay(Client client, SnakeWeedHelperConfig config, VineTracker tracker, TickClock tickClock)
+	VineHighlightOverlay(Client client, SnakeWeedHelperConfig config, VineTracker tracker, TickClock tickClock,
+		BankReminder reminder)
 	{
 		this.client = client;
 		this.config = config;
 		this.tracker = tracker;
 		this.tickClock = tickClock;
+		this.reminder = reminder;
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_SCENE);
 	}
@@ -66,6 +69,9 @@ class VineHighlightOverlay extends Overlay
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
+		if (reminder.hidesHighlights())
+			return null;
+
 		int tick = client.getTickCount();
 		long sinceTick = tickClock.millisSinceTick();
 		double glow = config.glow() ? HighlightStyle.pulse(System.currentTimeMillis(), PULSE_MILLIS) : 1;

@@ -48,13 +48,15 @@ class RouteOverlay extends Overlay
 	private final SnakeWeedHelperConfig config;
 	private final VineTracker tracker;
 	private final RouteService route;
+	private final BankReminder reminder;
 
 	@Inject
-	RouteOverlay(SnakeWeedHelperConfig config, VineTracker tracker, RouteService route)
+	RouteOverlay(SnakeWeedHelperConfig config, VineTracker tracker, RouteService route, BankReminder reminder)
 	{
 		this.config = config;
 		this.tracker = tracker;
 		this.route = route;
+		this.reminder = reminder;
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_SCENE);
 	}
@@ -63,7 +65,8 @@ class RouteOverlay extends Overlay
 	public Dimension render(Graphics2D graphics)
 	{
 		WorldPoint tile = route.getNextVine();
-		GameObject object = tile == null || !config.showNextVine() ? null : tracker.object(tile);
+		boolean hidden = !config.showNextVine() || reminder.hidesHighlights();
+		GameObject object = tile == null || hidden ? null : tracker.object(tile);
 		if (object == null)
 			return null;
 

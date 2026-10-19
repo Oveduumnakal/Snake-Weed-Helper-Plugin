@@ -249,16 +249,30 @@ public interface SnakeWeedHelperConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "gloryHint",
-		name = "Glory teleport prompt",
-		description = "When your backpack is full and you wear an amulet of glory with charges, prompts you to "
-			+ "teleport with it. It only shows a message; it never teleports for you.",
+		keyName = "bankMarker",
+		name = "Time to Bank marker",
+		description = "When your backpack is full at the vines, turns off the vine highlights and glows the tile "
+			+ "under you with the label \"Time to Bank\". It follows you as you walk and goes away when you leave "
+			+ "the vines or teleport.",
 		section = hintsSection,
 		position = 1
 	)
-	default boolean gloryHint()
+	default boolean bankMarker()
 	{
 		return true;
+	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "bankColor",
+		name = "Time to Bank color",
+		description = "Color of the tile and label. The default is dragonstone purple.",
+		section = hintsSection,
+		position = 2
+	)
+	default Color bankColor()
+	{
+		return new Color(150, 90, 220, 235);
 	}
 
 	@ConfigItem(
@@ -267,7 +281,7 @@ public interface SnakeWeedHelperConfig extends Config
 		description = "Suggests hopping worlds when other players are around and few vines are ripe. It only "
 			+ "shows a message; it never changes world.",
 		section = hintsSection,
-		position = 2
+		position = 3
 	)
 	default boolean hopHint()
 	{
@@ -280,7 +294,7 @@ public interface SnakeWeedHelperConfig extends Config
 		name = "Hop hint: players",
 		description = "Suggest hopping only when at least this many other players are near.",
 		section = hintsSection,
-		position = 3
+		position = 4
 	)
 	default int hopMinPlayers()
 	{
@@ -293,7 +307,7 @@ public interface SnakeWeedHelperConfig extends Config
 		name = "Hop hint: ripe vines",
 		description = "Suggest hopping only when fewer than this many vines are ripe or about to be.",
 		section = hintsSection,
-		position = 4
+		position = 5
 	)
 	default int hopMinRipeVines()
 	{

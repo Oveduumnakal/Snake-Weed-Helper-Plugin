@@ -27,6 +27,8 @@ package com.oveduumnakal.snakeweed;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.runelite.api.Item;
+import net.runelite.api.ItemContainer;
 import net.runelite.api.gameval.ItemID;
 
 /**
@@ -46,6 +48,22 @@ final class InventoryCheck
 
 	private InventoryCheck()
 	{
+	}
+
+	/**
+	 * The item ids in a container.
+	 *
+	 * @param container the container, such as the backpack
+	 * @return the ids in slot order, {@code -1} for empty slots
+	 */
+	static int[] ids(ItemContainer container)
+	{
+		Item[] items = container.getItems();
+		int[] ids = new int[items.length];
+		for (int i = 0; i < ids.length; i++)
+			ids[i] = items[i].getId();
+
+		return ids;
 	}
 
 	/**

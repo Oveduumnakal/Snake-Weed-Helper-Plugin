@@ -170,6 +170,18 @@ public class VineTrackerTest
 	}
 
 	@Test
+	public void nearMeansASeenVineWithinTheRadiusOnTheSamePlane()
+	{
+		VineTracker tracker = new VineTracker();
+		tracker.onSpawn(SnakeWeedIds.VINE_RIPE, TILE, 10, false);
+
+		assertTrue(tracker.isNear(new WorldPoint(2810, 3095, 0), VineTracker.NEAR_VINES));
+		assertFalse(tracker.isNear(new WorldPoint(2830, 3100, 0), VineTracker.NEAR_VINES));
+		assertFalse(tracker.isNear(new WorldPoint(2800, 3100, 1), VineTracker.NEAR_VINES));
+		assertFalse(new VineTracker().isNear(TILE, VineTracker.NEAR_VINES));
+	}
+
+	@Test
 	public void forgettingObjectsKeepsTheTimersButStopsDrawing()
 	{
 		VineTracker tracker = new VineTracker();

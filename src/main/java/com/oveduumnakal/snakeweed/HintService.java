@@ -31,8 +31,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import net.runelite.api.Client;
-import net.runelite.api.EquipmentInventorySlot;
-import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.Player;
 import net.runelite.api.WorldView;
@@ -48,9 +46,6 @@ class HintService
 {
 	/** Tiles around the player within which another player counts as nearby. */
 	static final int NEARBY_RADIUS = 15;
-
-	/** Tiles from a seen vine within which the player counts as being at the vines. */
-	static final int NEAR_VINES = 12;
 
 	private final Client client;
 	private final SnakeWeedHelperConfig config;
@@ -86,73 +81,26 @@ class HintService
 	void update(int tick)
 	{
 		Player me = client.getLocalPlayer();
-		if (me == null || !nearVines(me.getWorldLocation()))
+		if (me == null || !tracker.isNear(me.getWorldLocation(), VineTracker.NEAR_VINES))
 		{
 			reset();
 			return;
 		}
 
 		List<String> next = new ArrayList<>();
-		if (config.warnMissingSupplies())
+		ItemContainer inventory = client.getItemContainer(InventoryID.INV);
+		if (config.warnMissingSupplies() && inventory != null)
 		{
-			List<String> missing = InventoryCheck.missing(inventoryIds());
+			List<String> missing = InventoryCheck.missing(InventoryCheck.ids(inventory));
 			if (!missing.isEmpty())
 				next.add("Missing: " + String.join(", ", missing));
 		}
-
-		if (config.gloryHint() && GloryHint.shouldPrompt(freeSlots(), wornAmulet()))
-			next.add(GloryHint.TEXT);
 
 		if (config.hopHint() && WorldHopAdvisor.shouldHop(nearbyPlayers(me), ripeSoon(tick),
 			config.hopMinPlayers(), config.hopMinRipeVines()))
 			next.add("Crowded: consider hopping worlds");
 
 		lines = next;
-	}
-
-	/** Whether a vine has been seen within {@link #NEAR_VINES} tiles, so the hints stay quiet away from the vines. */
-	private boolean nearVines(WorldPoint here)
-	{
-		for (Vine vine : tracker.all())
-		{
-			if (vine.getTile().distanceTo(here) <= NEAR_VINES)
-				return true;
-		}
-
-		return false;
-	}
-
-	/** Empty backpack slots, or {@code -1} when the backpack has not loaded, so no prompt is made from nothing. */
-	private int freeSlots()
-	{
-		ItemContainer inventory = client.getItemContainer(InventoryID.INV);
-		if (inventory == null)
-			return -1;
-
-		return InventoryCheck.freeSlots(inventoryIds());
-	}
-
-	/** The item id of the worn amulet, or {@code -1} when none is worn. */
-	private int wornAmulet()
-	{
-		ItemContainer worn = client.getItemContainer(InventoryID.WORN);
-		Item amulet = worn == null ? null : worn.getItem(EquipmentInventorySlot.AMULET.getSlotIdx());
-		return amulet == null ? -1 : amulet.getId();
-	}
-
-	/** The item ids in the backpack, {@code -1} for empty slots. */
-	private int[] inventoryIds()
-	{
-		ItemContainer inventory = client.getItemContainer(InventoryID.INV);
-		if (inventory == null)
-			return new int[0];
-
-		Item[] items = inventory.getItems();
-		int[] ids = new int[items.length];
-		for (int i = 0; i < ids.length; i++)
-			ids[i] = items[i].getId();
-
-		return ids;
 	}
 
 	/** How many vines in view are ripe now or about to be. */

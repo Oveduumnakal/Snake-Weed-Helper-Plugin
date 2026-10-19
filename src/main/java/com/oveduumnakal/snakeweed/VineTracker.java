@@ -42,6 +42,9 @@ import net.runelite.api.coords.WorldPoint;
 @Singleton
 class VineTracker
 {
+	/** Tiles from a seen vine within which the player counts as being at the vines. */
+	static final int NEAR_VINES = 12;
+
 	private final Map<WorldPoint, Vine> vines = new LinkedHashMap<>();
 	private final Map<WorldPoint, GameObject> objects = new HashMap<>();
 
@@ -109,6 +112,25 @@ class VineTracker
 	Vine get(WorldPoint tile)
 	{
 		return vines.get(tile);
+	}
+
+	/**
+	 * Whether a vine has been seen within some tiles of a place, in scene or not, so a teleport far from the vines
+	 * counts as being away from them.
+	 *
+	 * @param here   the place
+	 * @param radius the tiles
+	 * @return true when some seen vine is that close
+	 */
+	boolean isNear(WorldPoint here, int radius)
+	{
+		for (WorldPoint tile : vines.keySet())
+		{
+			if (tile.distanceTo(here) <= radius)
+				return true;
+		}
+
+		return false;
 	}
 
 	/** Every vine seen, in the order first seen. */
