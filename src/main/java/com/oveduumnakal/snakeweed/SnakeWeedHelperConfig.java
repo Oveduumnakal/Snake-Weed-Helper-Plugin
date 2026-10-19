@@ -43,6 +43,12 @@ public interface SnakeWeedHelperConfig extends Config
 	/** Key of the Shortest Path toggle, watched by the plugin so a route is removed when it is switched off. */
 	String USE_SHORTEST_PATH = "useShortestPath";
 
+	/** Key of the bank-trips toggle, watched by the plugin so a trip is dropped when it is switched off. */
+	String BANK_TRIPS = "bankTrips";
+
+	/** Key of the hidden list of vine tiles seen so far, which the way back to the vines is routed to. */
+	String KNOWN_VINES = "knownVines";
+
 	/** Key of the tick-logger toggle, watched by the plugin so the logger starts and stops live. */
 	String TICK_LOGGER = "tickLogger";
 
@@ -61,6 +67,14 @@ public interface SnakeWeedHelperConfig extends Config
 		position = 1
 	)
 	String routeSection = "route";
+
+	/** Trips to the bank when the backpack is full of snake weed. */
+	@ConfigSection(
+		name = "Banking",
+		description = "Trips to the bank when the backpack is full of snake weed.",
+		position = 2
+	)
+	String bankingSection = "banking";
 
 	/** Tools for measuring game mechanics; not part of normal play. */
 	@ConfigSection(
@@ -172,6 +186,44 @@ public interface SnakeWeedHelperConfig extends Config
 	default int searchTicks()
 	{
 		return 3;
+	}
+
+	@ConfigItem(
+		keyName = BANK_TRIPS,
+		name = "Bank trips",
+		description = "When your backpack is full of snake weed, shows the route to the nearest bank you can use, "
+			+ "then the way back to the vines once you have emptied it. Needs the 'Shortest Path' plugin.",
+		section = bankingSection,
+		position = 0
+	)
+	default boolean bankTrips()
+	{
+		return true;
+	}
+
+	@Range(min = 0, max = 27)
+	@ConfigItem(
+		keyName = "bankWhenFreeSlots",
+		name = "Bank at free slots",
+		description = "The trip to the bank starts when you have this many empty slots or fewer. 0 means a "
+			+ "completely full backpack.",
+		section = bankingSection,
+		position = 1
+	)
+	default int bankWhenFreeSlots()
+	{
+		return 0;
+	}
+
+	@ConfigItem(
+		keyName = KNOWN_VINES,
+		name = "Known vines",
+		description = "The vine tiles seen so far.",
+		hidden = true
+	)
+	default String knownVines()
+	{
+		return "";
 	}
 
 	@ConfigItem(

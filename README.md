@@ -22,6 +22,11 @@ Snake Weed Helper is a RuneLite plugin that makes harvesting snake weed with the
 
   Uses the Shortest Path plugin to route you to the best next vine, to the quickest bank when your inventory is full, and back to the vines after you empty it.
 
+## Credits
+
+- Routes are drawn by the [Shortest Path](https://github.com/Skretzo/shortest-path) plugin. Install it to see them.
+- The bank list is adapted from Shortest Path's bank data (BSD 2-Clause).
+
 ## Links
 
 - [Report a bug](https://github.com/Oveduumnakal/Snake-Weed-Helper-Plugin/issues/new?template=bug_report.yml)
