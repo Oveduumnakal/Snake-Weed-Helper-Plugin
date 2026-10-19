@@ -52,7 +52,11 @@ class BankMarkerOverlay extends Overlay
 	/** Length of one glow pulse in milliseconds. */
 	static final int PULSE_MILLIS = 1200;
 
-	private static final int LABEL_LIFT = 20;
+	/** Height in local units the label clears a player's head by, on top of the player's height. */
+	private static final int LABEL_LIFT = 90;
+
+	/** Least player height assumed in local units, for when the client reports a smaller logical height. */
+	private static final int MIN_PLAYER_HEIGHT = 190;
 
 	private final Client client;
 	private final SnakeWeedHelperConfig config;
@@ -83,7 +87,7 @@ class BankMarkerOverlay extends Overlay
 
 		graphics.setFont(FontManager.getRunescapeBoldFont());
 		Point text = Perspective.getCanvasTextLocation(client, graphics, where, LABEL,
-			me.getLogicalHeight() + LABEL_LIFT);
+			Math.max(me.getLogicalHeight(), MIN_PLAYER_HEIGHT) + LABEL_LIFT);
 		if (text != null)
 			HighlightStyle.drawText(graphics, LABEL, text.getX(), text.getY(), color, 1);
 
