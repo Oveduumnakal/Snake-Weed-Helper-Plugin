@@ -137,7 +137,10 @@ public class SnakeWeedHelperPlugin extends Plugin
 	{
 		GameState state = event.getGameState();
 		if (state == GameState.LOADING)
+		{
 			sceneLoading = true;
+			vineTracker.forgetObjects();
+		}
 
 		if (state == GameState.LOGIN_SCREEN || state == GameState.HOPPING)
 		{

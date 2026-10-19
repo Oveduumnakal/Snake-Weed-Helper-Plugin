@@ -123,6 +123,16 @@ class VineTracker
 		return objects.get(tile);
 	}
 
+	/**
+	 * Lets go of every scene object, for when the scene unloads. The game does not report the objects of an old scene
+	 * as despawned, so without this they would keep being drawn, at the wrong place on screen, after a teleport. The
+	 * vines' states are kept so their timers carry on.
+	 */
+	void forgetObjects()
+	{
+		objects.clear();
+	}
+
 	/** Forgets everything, for a new login or when the plugin stops. */
 	void clear()
 	{

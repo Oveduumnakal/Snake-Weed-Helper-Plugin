@@ -24,12 +24,16 @@
  */
 package com.oveduumnakal.snakeweed;
 
+import java.lang.reflect.Proxy;
+
 import org.junit.Test;
 
+import net.runelite.api.GameObject;
 import net.runelite.api.coords.WorldPoint;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -163,5 +167,40 @@ public class VineTrackerTest
 
 		assertTrue(tracker.all().isEmpty());
 		assertNull(tracker.object(TILE));
+	}
+
+	@Test
+	public void forgettingObjectsKeepsTheTimersButStopsDrawing()
+	{
+		VineTracker tracker = new VineTracker();
+		tracker.track(vineObject(SnakeWeedIds.VINE_PICKED, TILE), 20, true);
+		assertNotNull(tracker.object(TILE));
+
+		tracker.forgetObjects();
+
+		assertNull(tracker.object(TILE));
+		assertEquals(20 + SnakeWeedIds.REGROW_TICKS, tracker.get(TILE).getRipeAtTick());
+	}
+
+	/** A scene object that answers only for its id and tile, which is all the tracker asks of it. */
+	private static GameObject vineObject(int id, WorldPoint tile)
+	{
+		return (GameObject) Proxy.newProxyInstance(GameObject.class.getClassLoader(), new Class<?>[]{GameObject.class},
+			(proxy, method, args) ->
+			{
+				switch (method.getName())
+				{
+					case "getId":
+						return id;
+					case "getWorldLocation":
+						return tile;
+					case "hashCode":
+						return System.identityHashCode(proxy);
+					case "equals":
+						return proxy == args[0];
+					default:
+						return null;
+				}
+			});
 	}
 }
