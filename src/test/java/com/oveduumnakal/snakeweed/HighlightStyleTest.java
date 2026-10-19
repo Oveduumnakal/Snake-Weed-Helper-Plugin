@@ -59,15 +59,34 @@ public class HighlightStyleTest
 	}
 
 	@Test
-	public void countdownRoundsUpToSecondsAndMarksEstimates()
+	public void countdownShowsTenthsAndStepsDownEveryTenthOfASecond()
+	{
+		Vine picked = new Vine(null, VineState.PICKED, 103);
+
+		assertEquals("1.8", VineHighlightOverlay.label(picked, 100, 0));
+		assertEquals("1.6", VineHighlightOverlay.label(picked, 100, 200));
+		assertEquals("1.5", VineHighlightOverlay.label(picked, 100, 300));
+		assertEquals("1.4", VineHighlightOverlay.label(picked, 100, 400));
+	}
+
+	@Test
+	public void countdownRoundsUpSoItNeverReadsZeroEarly()
 	{
 		Vine picked = new Vine(null, VineState.PICKED, 100);
+
+		assertEquals("60.0", VineHighlightOverlay.label(picked, 0, 0));
+		assertEquals("59.8", VineHighlightOverlay.label(picked, 0, 250));
+		assertEquals("0.1", VineHighlightOverlay.label(picked, 99, 599));
+		assertEquals("...", VineHighlightOverlay.label(picked, 100, 0));
+		assertEquals("...", VineHighlightOverlay.label(picked, 400, 0));
+	}
+
+	@Test
+	public void estimatedCountdownsCarryATilde()
+	{
 		Vine guessed = new Vine(null, VineState.UNKNOWN, 100);
 
-		assertEquals("60s", VineHighlightOverlay.label(picked, 0));
-		assertEquals("~60s", VineHighlightOverlay.label(guessed, 0));
-		assertEquals("1s", VineHighlightOverlay.label(picked, 99));
-		assertEquals("...", VineHighlightOverlay.label(picked, 100));
-		assertEquals("...", VineHighlightOverlay.label(picked, 400));
+		assertEquals("~1.2", VineHighlightOverlay.label(guessed, 98, 0));
+		assertEquals("~1.1", VineHighlightOverlay.label(guessed, 98, 100));
 	}
 }

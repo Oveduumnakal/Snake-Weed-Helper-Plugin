@@ -122,8 +122,8 @@ public interface SnakeWeedHelperConfig extends Config
 	@ConfigItem(
 		keyName = "showCountdown",
 		name = "Show regrow countdown",
-		description = "Shows the seconds left on a vine that cannot be searched. A tilde means the time is a "
-			+ "guess because the vine was already picked when first seen.",
+		description = "Counts down the seconds left on a vine that cannot be searched, to the tenth of a second. "
+			+ "A tilde means the time is a guess because the vine was already picked when first seen.",
 		section = vinesSection,
 		position = 2
 	)

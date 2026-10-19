@@ -77,4 +77,17 @@ final class Vine
 
 		return Math.max(0, ripeAtTick - tick);
 	}
+
+	/**
+	 * How many milliseconds until the vine is expected to be ripe, counting the part of the current tick already gone.
+	 *
+	 * @param tick            the current game tick
+	 * @param sinceTickMillis milliseconds since the current tick began
+	 * @return 0 for a ripe vine or one whose time has passed, else the milliseconds left
+	 */
+	long millisUntilRipe(int tick, long sinceTickMillis)
+	{
+		long ticks = ticksUntilRipe(tick);
+		return ticks == 0 ? 0 : Math.max(0, ticks * SnakeWeedIds.TICK_MILLIS - sinceTickMillis);
+	}
 }

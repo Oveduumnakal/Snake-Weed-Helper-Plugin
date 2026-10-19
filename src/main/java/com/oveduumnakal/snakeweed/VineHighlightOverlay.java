@@ -50,13 +50,15 @@ class VineHighlightOverlay extends Overlay
 	private final Client client;
 	private final SnakeWeedHelperConfig config;
 	private final VineTracker tracker;
+	private final TickClock tickClock;
 
 	@Inject
-	VineHighlightOverlay(Client client, SnakeWeedHelperConfig config, VineTracker tracker)
+	VineHighlightOverlay(Client client, SnakeWeedHelperConfig config, VineTracker tracker, TickClock tickClock)
 	{
 		this.client = client;
 		this.config = config;
 		this.tracker = tracker;
+		this.tickClock = tickClock;
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_SCENE);
 	}
@@ -65,6 +67,7 @@ class VineHighlightOverlay extends Overlay
 	public Dimension render(Graphics2D graphics)
 	{
 		int tick = client.getTickCount();
+		long sinceTick = tickClock.millisSinceTick();
 		double glow = config.glow() ? HighlightStyle.pulse(System.currentTimeMillis(), PULSE_MILLIS) : 1;
 		graphics.setFont(FontManager.getRunescapeSmallFont());
 		for (Vine vine : tracker.all())
@@ -81,20 +84,29 @@ class VineHighlightOverlay extends Overlay
 
 			HighlightStyle.draw(graphics, outline(object), config.greyColor(), 1);
 			if (config.showCountdown())
-				drawCountdown(graphics, object, label(vine, tick));
+				drawCountdown(graphics, object, label(vine, tick, sinceTick));
 		}
 
 		return null;
 	}
 
-	/** The countdown text for a vine that cannot be searched: seconds left, with a tilde when only estimated. */
-	static String label(Vine vine, int tick)
+	/**
+	 * The countdown text for a vine that cannot be searched: seconds left to the tenth, rounded up so it never
+	 * reads 0.0 before the vine is ripe, with a tilde when the time is only estimated.
+	 *
+	 * @param vine      the vine
+	 * @param tick      the current game tick
+	 * @param sinceTick milliseconds since the current tick began
+	 * @return the text, such as {@code 1.6}, or {@code ...} when the time has passed but the vine has not grown back
+	 */
+	static String label(Vine vine, int tick, long sinceTick)
 	{
-		int ticks = vine.ticksUntilRipe(tick);
-		if (ticks <= 0)
+		long millis = vine.millisUntilRipe(tick, sinceTick);
+		if (millis <= 0)
 			return "...";
 
-		String seconds = (int) Math.ceil(ticks * SnakeWeedIds.SECONDS_PER_TICK) + "s";
+		long tenths = (millis + 99) / 100;
+		String seconds = (tenths / 10) + "." + (tenths % 10);
 		return vine.getState() == VineState.UNKNOWN ? "~" + seconds : seconds;
 	}
 

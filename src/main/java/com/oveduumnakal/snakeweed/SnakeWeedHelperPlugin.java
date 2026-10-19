@@ -74,6 +74,9 @@ public class SnakeWeedHelperPlugin extends Plugin
 	private VineHighlightOverlay vineOverlay;
 
 	@Inject
+	private TickClock tickClock;
+
+	@Inject
 	private RouteOverlay routeOverlay;
 
 	@Inject
@@ -133,6 +136,7 @@ public class SnakeWeedHelperPlugin extends Plugin
 	@Subscribe
 	public void onGameTick(GameTick event)
 	{
+		tickClock.onTick();
 		sceneLoading = false;
 		if (knownVines.takeChanged())
 			configManager.setConfiguration(SnakeWeedHelperConfig.GROUP, SnakeWeedHelperConfig.KNOWN_VINES,

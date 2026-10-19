@@ -41,8 +41,8 @@ final class SnakeWeedIds
 	/** Ticks a vine first seen picked is guessed to need: half the regrow time, as the picking was not seen. */
 	static final int UNKNOWN_RIPE_TICKS = REGROW_TICKS / 2;
 
-	/** Seconds in one game tick, for showing tick counts as a countdown. */
-	static final double SECONDS_PER_TICK = 0.6;
+	/** Milliseconds in one game tick, for showing tick counts as a countdown. */
+	static final int TICK_MILLIS = 600;
 
 	private SnakeWeedIds()
 	{
