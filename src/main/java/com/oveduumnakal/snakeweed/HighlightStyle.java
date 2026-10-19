@@ -1,0 +1,144 @@
+/*
+ * Copyright (c) 2026, Oveduumnakal
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+package com.oveduumnakal.snakeweed;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Shape;
+import java.awt.Stroke;
+
+/**
+ * The strength math and drawing behind the highlights: how the glow pulses, how a strength scales a color, and how
+ * a shape and its label are painted. Static so the math can be unit-tested without a client.
+ */
+final class HighlightStyle
+{
+	/** Share of the border's strength the fill gets, so the shape reads as tinted rather than painted over. */
+	static final double FILL_SHARE = 0.25;
+
+	/** The border every highlight is drawn with. */
+	private static final Stroke BORDER = new BasicStroke(2f);
+
+	/** The thicker border of a ring that marks a target. */
+	private static final Stroke RING = new BasicStroke(3f);
+
+	private HighlightStyle()
+	{
+	}
+
+	/**
+	 * The glow at a moment in time: rises from 0 to 1 and back once per period, easing in and out.
+	 *
+	 * @param millis the current time in milliseconds
+	 * @param period the length of one pulse in milliseconds; zero or less gives a steady 1
+	 * @return the strength 0 to 1
+	 */
+	static double pulse(long millis, int period)
+	{
+		if (period <= 0)
+			return 1;
+
+		double phase = (double) (millis % period) / period;
+		return 0.5 - 0.5 * Math.cos(2 * Math.PI * phase);
+	}
+
+	/**
+	 * Fills a shape with a light tint of the color and borders it, both at the given strength. Draws nothing for a
+	 * missing shape or a strength that leaves the color fully transparent.
+	 *
+	 * @param graphics the graphics to draw on
+	 * @param shape    the shape, or {@code null}
+	 * @param color    the base color
+	 * @param strength the strength 0 to 1
+	 */
+	static void draw(Graphics2D graphics, Shape shape, Color color, double strength)
+	{
+		Color edge = scale(color, strength);
+		if (shape == null || edge.getAlpha() == 0)
+			return;
+
+		graphics.setColor(scale(edge, FILL_SHARE));
+		graphics.fill(shape);
+		graphics.setColor(edge);
+		graphics.setStroke(BORDER);
+		graphics.draw(shape);
+	}
+
+	/**
+	 * Borders a shape with a thick unfilled ring, to mark a target without hiding what is under it. Draws nothing
+	 * for a missing shape.
+	 *
+	 * @param graphics the graphics to draw on
+	 * @param shape    the shape, or {@code null}
+	 * @param color    the ring color
+	 */
+	static void drawRing(Graphics2D graphics, Shape shape, Color color)
+	{
+		if (shape == null)
+			return;
+
+		graphics.setColor(color);
+		graphics.setStroke(RING);
+		graphics.draw(shape);
+	}
+
+	/**
+	 * Writes text in the color at the given strength over a thin dark shadow that fades with it, so the text
+	 * stays readable over a tinted fill. Draws nothing for a strength that leaves the color fully transparent.
+	 *
+	 * @param graphics the graphics to draw on, with its font already set
+	 * @param text     the text
+	 * @param x        the x of the text's baseline start
+	 * @param y        the y of the text's baseline
+	 * @param color    the base color
+	 * @param strength the strength 0 to 1
+	 */
+	static void drawText(Graphics2D graphics, String text, int x, int y, Color color, double strength)
+	{
+		Color face = scale(color, strength);
+		if (face.getAlpha() == 0)
+			return;
+
+		graphics.setColor(new Color(0, 0, 0, face.getAlpha()));
+		graphics.drawString(text, x + 1, y + 1);
+		graphics.setColor(face);
+		graphics.drawString(text, x, y);
+	}
+
+	/**
+	 * A color with its alpha scaled by a strength.
+	 *
+	 * @param color    the base color
+	 * @param strength the strength 0 to 1
+	 * @return the color at that strength
+	 */
+	static Color scale(Color color, double strength)
+	{
+		double clamped = Math.max(0, Math.min(1, strength));
+		int alpha = (int) Math.round(color.getAlpha() * clamped);
+		return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
+	}
+}

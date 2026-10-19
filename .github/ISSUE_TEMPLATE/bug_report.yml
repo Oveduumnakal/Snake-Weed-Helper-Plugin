@@ -63,8 +63,7 @@ body:
       options:
         - Vine highlights / grey-out
         - Click-away prompt
-        - Routes (Shortest Path)
-        - Banking trips
+        - Next-vine marker
         - Tick rhythm cue
         - World-hop hint
         - Configuration / settings
