@@ -31,6 +31,7 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.ConfigSection;
+import net.runelite.client.config.Notification;
 import net.runelite.client.config.Range;
 
 /** Settings for Snake Weed Helper; sections are added as each feature lands. */
@@ -66,6 +67,14 @@ public interface SnakeWeedHelperConfig extends Config
 		position = 2
 	)
 	String hintsSection = "hints";
+
+	/** Alerts for when something happens while you are looking elsewhere. */
+	@ConfigSection(
+		name = "Notifications",
+		description = "Alerts for when something happens while you are looking elsewhere.",
+		position = 3
+	)
+	String notificationsSection = "notifications";
 
 	/** Tools for measuring game mechanics; not part of normal play. */
 	@ConfigSection(
@@ -193,12 +202,25 @@ public interface SnakeWeedHelperConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "gloryHint",
+		name = "Glory teleport prompt",
+		description = "When your backpack is full and you wear an amulet of glory with charges, prompts you to "
+			+ "teleport with it. It only shows a message; it never teleports for you.",
+		section = hintsSection,
+		position = 1
+	)
+	default boolean gloryHint()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "hopHint",
 		name = "World-hop hint",
 		description = "Suggests hopping worlds when other players are around and few vines are ripe. It only "
 			+ "shows a message; it never changes world.",
 		section = hintsSection,
-		position = 1
+		position = 2
 	)
 	default boolean hopHint()
 	{
@@ -211,7 +233,7 @@ public interface SnakeWeedHelperConfig extends Config
 		name = "Hop hint: players",
 		description = "Suggest hopping only when at least this many other players are near.",
 		section = hintsSection,
-		position = 2
+		position = 3
 	)
 	default int hopMinPlayers()
 	{
@@ -224,11 +246,24 @@ public interface SnakeWeedHelperConfig extends Config
 		name = "Hop hint: ripe vines",
 		description = "Suggest hopping only when fewer than this many vines are ripe or about to be.",
 		section = hintsSection,
-		position = 3
+		position = 4
 	)
 	default int hopMinRipeVines()
 	{
 		return 4;
+	}
+
+	@ConfigItem(
+		keyName = "notifyHarvested",
+		name = "Notify when harvested",
+		description = "Sends a notification each time a herb lands in your backpack, which is when a search is "
+			+ "complete. Off until you turn it on.",
+		section = notificationsSection,
+		position = 0
+	)
+	default Notification notifyHarvested()
+	{
+		return Notification.OFF;
 	}
 
 	@ConfigItem(

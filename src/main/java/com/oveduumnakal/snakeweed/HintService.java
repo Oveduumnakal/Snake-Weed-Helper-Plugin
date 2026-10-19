@@ -31,6 +31,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import net.runelite.api.Client;
+import net.runelite.api.EquipmentInventorySlot;
 import net.runelite.api.Item;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.Player;
@@ -99,6 +100,9 @@ class HintService
 				next.add("Missing: " + String.join(", ", missing));
 		}
 
+		if (config.gloryHint() && GloryHint.shouldPrompt(freeSlots(), wornAmulet()))
+			next.add(GloryHint.TEXT);
+
 		if (config.hopHint() && WorldHopAdvisor.shouldHop(nearbyPlayers(me), ripeSoon(tick),
 			config.hopMinPlayers(), config.hopMinRipeVines()))
 			next.add("Crowded: consider hopping worlds");
@@ -116,6 +120,31 @@ class HintService
 		}
 
 		return false;
+	}
+
+	/** Empty backpack slots, or {@code -1} when the backpack has not loaded, so no prompt is made from nothing. */
+	private int freeSlots()
+	{
+		ItemContainer inventory = client.getItemContainer(InventoryID.INV);
+		if (inventory == null)
+			return -1;
+
+		int free = 0;
+		for (int id : inventoryIds())
+		{
+			if (id == -1)
+				free++;
+		}
+
+		return free;
+	}
+
+	/** The item id of the worn amulet, or {@code -1} when none is worn. */
+	private int wornAmulet()
+	{
+		ItemContainer worn = client.getItemContainer(InventoryID.WORN);
+		Item amulet = worn == null ? null : worn.getItem(EquipmentInventorySlot.AMULET.getSlotIdx());
+		return amulet == null ? -1 : amulet.getId();
 	}
 
 	/** The item ids in the backpack, {@code -1} for empty slots. */

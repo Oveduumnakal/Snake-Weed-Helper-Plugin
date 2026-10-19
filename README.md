@@ -16,6 +16,16 @@ Snake Weed Helper is a RuneLite plugin that makes harvesting snake weed with the
 
   When a search fails, a large prompt tells you to click away on the one tick you have, so you never get stuck in the manual search animation.
 
+### Hints and notifications
+
+- **Glory teleport prompt**
+
+  When your backpack is full and you wear a charged amulet of glory, a message tells you to teleport with it.
+
+- **Notify when harvested**
+
+  Optional. Sends a RuneLite notification each time a herb lands in your backpack. Off until you turn it on in the plugin's settings.
+
 ### Routes
 
 - **Next vine**

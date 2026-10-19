@@ -38,6 +38,7 @@ import net.runelite.api.events.GameObjectDespawned;
 import net.runelite.api.events.GameObjectSpawned;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
+import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
@@ -90,6 +91,9 @@ public class SnakeWeedHelperPlugin extends Plugin
 	private HintOverlay hintOverlay;
 
 	@Inject
+	private HarvestNotifier harvestNotifier;
+
+	@Inject
 	private TickLogger tickLogger;
 
 	/** True from a scene starting to load until the next tick, so the vines it brings are not read as picks. */
@@ -113,6 +117,7 @@ public class SnakeWeedHelperPlugin extends Plugin
 		overlayManager.remove(routeOverlay);
 		overlayManager.remove(hintOverlay);
 		hintService.reset();
+		harvestNotifier.reset();
 		routeService.reset();
 		vineTracker.clear();
 		tickLogger.stop();
@@ -130,6 +135,13 @@ public class SnakeWeedHelperPlugin extends Plugin
 			routeService.reset();
 
 		hintService.update(client.getTickCount());
+	}
+
+	/** Sends the harvest notification when a herb lands in the backpack. */
+	@Subscribe
+	public void onItemContainerChanged(ItemContainerChanged event)
+	{
+		harvestNotifier.onItemsChanged(event.getContainerId(), event.getItemContainer());
 	}
 
 	/** Tells the planner which vine the player clicked to search, or that they turned to something else. */
@@ -155,6 +167,7 @@ public class SnakeWeedHelperPlugin extends Plugin
 			vineTracker.clear();
 			routeService.reset();
 			hintService.reset();
+			harvestNotifier.reset();
 		}
 	}
 
