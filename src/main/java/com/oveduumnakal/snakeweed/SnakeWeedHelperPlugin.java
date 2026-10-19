@@ -104,6 +104,9 @@ public class SnakeWeedHelperPlugin extends Plugin
 	private BankMarkerOverlay bankMarkerOverlay;
 
 	@Inject
+	private GloryTabOverlay gloryTabOverlay;
+
+	@Inject
 	private ClickAwayOverlay clickAwayOverlay;
 
 	@Inject
@@ -120,6 +123,7 @@ public class SnakeWeedHelperPlugin extends Plugin
 		overlayManager.add(hintOverlay);
 		overlayManager.add(clickAwayOverlay);
 		overlayManager.add(bankMarkerOverlay);
+		overlayManager.add(gloryTabOverlay);
 		clientThread.invokeLater(this::restoreScene);
 		if (config.tickLogger())
 			tickLogger.start();
@@ -133,6 +137,7 @@ public class SnakeWeedHelperPlugin extends Plugin
 		overlayManager.remove(hintOverlay);
 		overlayManager.remove(clickAwayOverlay);
 		overlayManager.remove(bankMarkerOverlay);
+		overlayManager.remove(gloryTabOverlay);
 		bankReminder.reset();
 		hintService.reset();
 		harvestNotifier.reset();

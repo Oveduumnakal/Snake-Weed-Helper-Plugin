@@ -268,13 +268,13 @@ public interface SnakeWeedHelperConfig extends Config
 	@ConfigItem(
 		keyName = "bankColor",
 		name = "Time to Bank color",
-		description = "Color of the tile and label. The default is dragonstone purple.",
+		description = "Color of the tile, label and glory highlight. The default is gold.",
 		section = hintsSection,
 		position = 2
 	)
 	default Color bankColor()
 	{
-		return new Color(150, 90, 220, 235);
+		return new Color(0xEB, 0xD1, 0x25, 0xFF);
 	}
 
 	@ConfigItem(

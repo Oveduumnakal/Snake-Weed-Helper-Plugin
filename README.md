@@ -20,7 +20,7 @@ Snake Weed Helper is a RuneLite plugin that makes harvesting snake weed with the
 
 - **Time to Bank marker**
 
-  When your backpack is full at the vines, the vine highlights switch off and the tile under you glows dragonstone purple with the label "Time to Bank". It follows you as you walk and goes away when you leave the vines or teleport.
+  When your backpack is full at the vines, the vine highlights switch off and the tile under you glows gold with the label "Time to Bank". It follows you as you walk and goes away when you leave the vines or teleport.
 
 - **Notify when harvested**
 
