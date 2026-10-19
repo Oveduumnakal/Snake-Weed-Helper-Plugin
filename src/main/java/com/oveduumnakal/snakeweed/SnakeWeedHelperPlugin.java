@@ -83,6 +83,12 @@ public class SnakeWeedHelperPlugin extends Plugin
 	private TripRouter tripRouter;
 
 	@Inject
+	private HintService hintService;
+
+	@Inject
+	private HintOverlay hintOverlay;
+
+	@Inject
 	private KnownVines knownVines;
 
 	@Inject
@@ -102,6 +108,7 @@ public class SnakeWeedHelperPlugin extends Plugin
 	{
 		overlayManager.add(vineOverlay);
 		overlayManager.add(routeOverlay);
+		overlayManager.add(hintOverlay);
 		knownVines.load(config.knownVines());
 		clientThread.invokeLater(this::restoreScene);
 		if (config.tickLogger())
@@ -113,6 +120,8 @@ public class SnakeWeedHelperPlugin extends Plugin
 	{
 		overlayManager.remove(vineOverlay);
 		overlayManager.remove(routeOverlay);
+		overlayManager.remove(hintOverlay);
+		hintService.reset();
 		shortestPath.clear();
 		routeService.reset();
 		tripRouter.reset();
@@ -131,6 +140,8 @@ public class SnakeWeedHelperPlugin extends Plugin
 
 		if (config.showNextVine() || config.useShortestPath() || config.bankTrips())
 			tripRouter.update(client.getTickCount());
+
+		hintService.update(client.getTickCount());
 	}
 
 	/** Starts the scene-loading window, and forgets the vines when the player leaves the world. */
@@ -145,6 +156,7 @@ public class SnakeWeedHelperPlugin extends Plugin
 		{
 			vineTracker.clear();
 			tripRouter.reset();
+			hintService.reset();
 		}
 	}
 

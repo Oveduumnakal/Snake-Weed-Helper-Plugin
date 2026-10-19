@@ -76,6 +76,14 @@ public interface SnakeWeedHelperConfig extends Config
 	)
 	String bankingSection = "banking";
 
+	/** Short warnings shown while you are at the vines. */
+	@ConfigSection(
+		name = "Hints",
+		description = "Short warnings shown while you are at the vines.",
+		position = 3
+	)
+	String hintsSection = "hints";
+
 	/** Tools for measuring game mechanics; not part of normal play. */
 	@ConfigSection(
 		name = "Developer",
@@ -224,6 +232,57 @@ public interface SnakeWeedHelperConfig extends Config
 	default String knownVines()
 	{
 		return "";
+	}
+
+	@ConfigItem(
+		keyName = "warnMissingSupplies",
+		name = "Warn about missing supplies",
+		description = "Warns when the knife or the mahogany logs the 3-tick method needs are not in your backpack.",
+		section = hintsSection,
+		position = 0
+	)
+	default boolean warnMissingSupplies()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "hopHint",
+		name = "World-hop hint",
+		description = "Suggests hopping worlds when other players are around and few vines are ripe. It only "
+			+ "shows a message; it never changes world.",
+		section = hintsSection,
+		position = 1
+	)
+	default boolean hopHint()
+	{
+		return true;
+	}
+
+	@Range(min = 1, max = 20)
+	@ConfigItem(
+		keyName = "hopMinPlayers",
+		name = "Hop hint: players",
+		description = "Suggest hopping only when at least this many other players are near.",
+		section = hintsSection,
+		position = 2
+	)
+	default int hopMinPlayers()
+	{
+		return 2;
+	}
+
+	@Range(min = 1, max = 20)
+	@ConfigItem(
+		keyName = "hopMinRipeVines",
+		name = "Hop hint: ripe vines",
+		description = "Suggest hopping only when fewer than this many vines are ripe or about to be.",
+		section = hintsSection,
+		position = 3
+	)
+	default int hopMinRipeVines()
+	{
+		return 4;
 	}
 
 	@ConfigItem(
