@@ -34,6 +34,7 @@ import net.runelite.api.GameState;
 import net.runelite.api.Scene;
 import net.runelite.api.Tile;
 import net.runelite.api.WorldView;
+import net.runelite.api.events.AnimationChanged;
 import net.runelite.api.events.GameObjectDespawned;
 import net.runelite.api.events.GameObjectSpawned;
 import net.runelite.api.events.GameStateChanged;
@@ -94,6 +95,12 @@ public class SnakeWeedHelperPlugin extends Plugin
 	private HarvestNotifier harvestNotifier;
 
 	@Inject
+	private SearchService searchService;
+
+	@Inject
+	private ClickAwayOverlay clickAwayOverlay;
+
+	@Inject
 	private TickLogger tickLogger;
 
 	/** True from a scene starting to load until the next tick, so the vines it brings are not read as picks. */
@@ -105,6 +112,7 @@ public class SnakeWeedHelperPlugin extends Plugin
 		overlayManager.add(vineOverlay);
 		overlayManager.add(routeOverlay);
 		overlayManager.add(hintOverlay);
+		overlayManager.add(clickAwayOverlay);
 		clientThread.invokeLater(this::restoreScene);
 		if (config.tickLogger())
 			tickLogger.start();
@@ -116,8 +124,10 @@ public class SnakeWeedHelperPlugin extends Plugin
 		overlayManager.remove(vineOverlay);
 		overlayManager.remove(routeOverlay);
 		overlayManager.remove(hintOverlay);
+		overlayManager.remove(clickAwayOverlay);
 		hintService.reset();
 		harvestNotifier.reset();
+		searchService.reset();
 		routeService.reset();
 		vineTracker.clear();
 		tickLogger.stop();
@@ -135,6 +145,15 @@ public class SnakeWeedHelperPlugin extends Plugin
 			routeService.reset();
 
 		hintService.update(client.getTickCount());
+		searchService.onTick();
+	}
+
+	/** Tells the search tracker when the player's fletch animation (re)starts, which times a 3-tick search. */
+	@Subscribe
+	public void onAnimationChanged(AnimationChanged event)
+	{
+		if (event.getActor() == client.getLocalPlayer() && event.getActor().getAnimation() == SnakeWeedIds.ANIM_FLETCH)
+			searchService.onFletchAnimation();
 	}
 
 	/** Sends the harvest notification when a herb lands in the backpack. */
@@ -149,6 +168,7 @@ public class SnakeWeedHelperPlugin extends Plugin
 	public void onMenuOptionClicked(MenuOptionClicked event)
 	{
 		routeService.onClick(event.getMenuAction(), event.getId(), event.getParam0(), event.getParam1());
+		searchService.onClick(event.getMenuAction(), event.getItemId(), event.getId());
 	}
 
 	/** Starts the scene-loading window, and forgets the vines when the player leaves the world. */
@@ -168,6 +188,7 @@ public class SnakeWeedHelperPlugin extends Plugin
 			routeService.reset();
 			hintService.reset();
 			harvestNotifier.reset();
+			searchService.reset();
 		}
 	}
 

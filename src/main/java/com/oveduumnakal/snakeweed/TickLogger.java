@@ -365,6 +365,18 @@ class TickLogger
 		return nearby;
 	}
 
+	/**
+	 * Adds a line from another part of the plugin, such as a prompt being shown, so a log shows what the plugin
+	 * decided as well as what the game did. Does nothing while the logger is off.
+	 *
+	 * @param kind    the kind of line
+	 * @param details what happened
+	 */
+	void note(String kind, String details)
+	{
+		write(kind, details);
+	}
+
 	/** Appends one line: tick, wall-clock milliseconds, kind, details. Closes the logger if the write fails. */
 	private void write(String kind, String details)
 	{

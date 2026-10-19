@@ -52,11 +52,19 @@ public interface SnakeWeedHelperConfig extends Config
 	)
 	String vinesSection = "vines";
 
+	/** The prompt to click away after a failed 3-tick search. */
+	@ConfigSection(
+		name = "Click-away",
+		description = "The prompt to click away after a failed 3-tick search.",
+		position = 1
+	)
+	String clickAwaySection = "clickAway";
+
 	/** Which vine to search next. */
 	@ConfigSection(
 		name = "Route",
 		description = "Which vine to search next.",
-		position = 1
+		position = 2
 	)
 	String routeSection = "route";
 
@@ -64,7 +72,7 @@ public interface SnakeWeedHelperConfig extends Config
 	@ConfigSection(
 		name = "Hints",
 		description = "Short warnings shown while you are at the vines.",
-		position = 2
+		position = 3
 	)
 	String hintsSection = "hints";
 
@@ -72,7 +80,7 @@ public interface SnakeWeedHelperConfig extends Config
 	@ConfigSection(
 		name = "Notifications",
 		description = "Alerts for when something happens while you are looking elsewhere.",
-		position = 3
+		position = 4
 	)
 	String notificationsSection = "notifications";
 
@@ -132,6 +140,45 @@ public interface SnakeWeedHelperConfig extends Config
 		position = 3
 	)
 	default boolean glow()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "clickAwayPrompt",
+		name = "Click-away prompt",
+		description = "In the 3-tick method, shows a large prompt on the one tick you have to click away after a "
+			+ "search that found no herb, before the manual search animation takes over.",
+		section = clickAwaySection,
+		position = 0
+	)
+	default boolean clickAwayPrompt()
+	{
+		return true;
+	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "clickAwayColor",
+		name = "Prompt color",
+		description = "Color of the click-away prompt.",
+		section = clickAwaySection,
+		position = 1
+	)
+	default Color clickAwayColor()
+	{
+		return new Color(255, 70, 40, 255);
+	}
+
+	@ConfigItem(
+		keyName = "missedWarning",
+		name = "Warn when missed",
+		description = "Shows a short warning, with a count, when the click-away was missed and the manual search "
+			+ "began.",
+		section = clickAwaySection,
+		position = 2
+	)
+	default boolean missedWarning()
 	{
 		return true;
 	}

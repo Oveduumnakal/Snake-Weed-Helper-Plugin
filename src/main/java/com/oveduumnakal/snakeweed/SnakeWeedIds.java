@@ -44,6 +44,12 @@ final class SnakeWeedIds
 	/** Ticks a vine first seen picked is guessed to need: half the regrow time, as the picking was not seen. */
 	static final int UNKNOWN_RIPE_TICKS = REGROW_TICKS / 2;
 
+	/** The animation of cutting mahogany logs with a knife, which is the delay action of the 3-tick method. */
+	static final int ANIM_FLETCH = 1248;
+
+	/** The animation of searching a vine by hand, which a failed 3-tick search falls into if not clicked away. */
+	static final int ANIM_SEARCH = 2094;
+
 	/** Milliseconds in one game tick, for showing tick counts as a countdown. */
 	static final int TICK_MILLIS = 600;
 

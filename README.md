@@ -14,7 +14,7 @@ Snake Weed Helper is a RuneLite plugin that makes harvesting snake weed with the
 
 - **Click-away prompt**
 
-  When a search fails, a large prompt tells you to click away on the one tick you have, so you never get stuck in the manual search animation.
+  In the 3-tick method, when a search finds no herb, a large prompt tells you to click away on the one tick you have, so you do not get stuck in the manual search animation. If the window is missed, a short warning counts it.
 
 ### Hints and notifications
 
