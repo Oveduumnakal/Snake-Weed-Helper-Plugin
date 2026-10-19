@@ -38,6 +38,33 @@ import static org.junit.Assert.assertTrue;
 public class InventoryCheckTest
 {
 	@Test
+	public void aShortItemListStillLeavesTheRestOfTheBackpackFree()
+	{
+		int[] items = {ItemID.KNIFE, ItemID.MAHOGANY_LOGS};
+
+		assertEquals(26, InventoryCheck.freeSlots(items));
+	}
+
+	@Test
+	public void emptyEntriesInAFullLengthListAreFree()
+	{
+		int[] items = new int[InventoryCheck.BACKPACK_SLOTS];
+		Arrays.fill(items, -1);
+		items[0] = ItemID.KNIFE;
+
+		assertEquals(27, InventoryCheck.freeSlots(items));
+	}
+
+	@Test
+	public void aFullBackpackHasNoFreeSlots()
+	{
+		int[] items = new int[InventoryCheck.BACKPACK_SLOTS];
+		Arrays.fill(items, ItemID.UNIDENTIFIED_SNAKE_WEED);
+
+		assertEquals(0, InventoryCheck.freeSlots(items));
+	}
+
+	@Test
 	public void bothPresentMeansNothingMissing()
 	{
 		int[] items = {ItemID.KNIFE, -1, ItemID.MAHOGANY_LOGS};

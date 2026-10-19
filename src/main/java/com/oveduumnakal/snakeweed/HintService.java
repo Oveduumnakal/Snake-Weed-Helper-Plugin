@@ -129,14 +129,7 @@ class HintService
 		if (inventory == null)
 			return -1;
 
-		int free = 0;
-		for (int id : inventoryIds())
-		{
-			if (id == -1)
-				free++;
-		}
-
-		return free;
+		return InventoryCheck.freeSlots(inventoryIds());
 	}
 
 	/** The item id of the worn amulet, or {@code -1} when none is worn. */

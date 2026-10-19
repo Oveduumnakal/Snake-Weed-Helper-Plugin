@@ -35,6 +35,9 @@ import net.runelite.api.gameval.ItemID;
  */
 final class InventoryCheck
 {
+	/** Slots in the backpack. */
+	static final int BACKPACK_SLOTS = 28;
+
 	/** Name shown when no knife is carried. */
 	static final String KNIFE = "knife";
 
@@ -43,6 +46,25 @@ final class InventoryCheck
 
 	private InventoryCheck()
 	{
+	}
+
+	/**
+	 * Empty backpack slots. The game's item list can end at the last item carried, so empty slots are counted as the
+	 * backpack's size less the slots in use, not as the empty entries in the list.
+	 *
+	 * @param itemIds the inventory's item ids ({@code -1} for empty slots)
+	 * @return the empty slots, 0 when the backpack is full
+	 */
+	static int freeSlots(int[] itemIds)
+	{
+		int used = 0;
+		for (int id : itemIds)
+		{
+			if (id != -1)
+				used++;
+		}
+
+		return Math.max(0, BACKPACK_SLOTS - used);
 	}
 
 	/**
