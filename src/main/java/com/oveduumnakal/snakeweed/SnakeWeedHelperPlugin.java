@@ -44,7 +44,6 @@ import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
-import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
@@ -109,9 +108,6 @@ public class SnakeWeedHelperPlugin extends Plugin
 	@Inject
 	private ClickAwayOverlay clickAwayOverlay;
 
-	@Inject
-	private TickLogger tickLogger;
-
 	/** True from a scene starting to load until the next tick, so the vines it brings are not read as picks. */
 	private boolean sceneLoading;
 
@@ -125,8 +121,6 @@ public class SnakeWeedHelperPlugin extends Plugin
 		overlayManager.add(bankMarkerOverlay);
 		overlayManager.add(gloryTabOverlay);
 		clientThread.invokeLater(this::restoreScene);
-		if (config.tickLogger())
-			tickLogger.start();
 	}
 
 	@Override
@@ -144,7 +138,6 @@ public class SnakeWeedHelperPlugin extends Plugin
 		searchService.reset();
 		routeService.reset();
 		vineTracker.clear();
-		tickLogger.stop();
 	}
 
 	/** Ends the scene-loading window once the tick after a load arrives, then re-plans the next vine. */
@@ -221,22 +214,6 @@ public class SnakeWeedHelperPlugin extends Plugin
 	public void onGameObjectDespawned(GameObjectDespawned event)
 	{
 		vineTracker.untrack(event.getGameObject());
-	}
-
-	/** Starts or stops the tick logger as its setting is toggled. */
-	@Subscribe
-	public void onConfigChanged(ConfigChanged event)
-	{
-		if (!SnakeWeedHelperConfig.GROUP.equals(event.getGroup()))
-			return;
-
-		if (!SnakeWeedHelperConfig.TICK_LOGGER.equals(event.getKey()))
-			return;
-
-		if (config.tickLogger())
-			tickLogger.start();
-		else
-			tickLogger.stop();
 	}
 
 	/** Whether a spawning object changed while in view, rather than arriving with a scene. */

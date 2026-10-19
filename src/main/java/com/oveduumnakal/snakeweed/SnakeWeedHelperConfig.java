@@ -41,9 +41,6 @@ public interface SnakeWeedHelperConfig extends Config
 	/** Config group key, shared with the plugin so both agree on where settings are stored. */
 	String GROUP = "snakeweedhelper";
 
-	/** Key of the tick-logger toggle, watched by the plugin so the logger starts and stops live. */
-	String TICK_LOGGER = "tickLogger";
-
 	/** How vines you can and cannot search are drawn. */
 	@ConfigSection(
 		name = "Vines",
@@ -83,15 +80,6 @@ public interface SnakeWeedHelperConfig extends Config
 		position = 4
 	)
 	String notificationsSection = "notifications";
-
-	/** Tools for measuring game mechanics; not part of normal play. */
-	@ConfigSection(
-		name = "Developer",
-		description = "Tools for measuring game mechanics.",
-		position = 99,
-		closedByDefault = true
-	)
-	String developerSection = "developer";
 
 	@Alpha
 	@ConfigItem(
@@ -327,18 +315,5 @@ public interface SnakeWeedHelperConfig extends Config
 	default Notification notifyHarvested()
 	{
 		return Notification.OFF;
-	}
-
-	@ConfigItem(
-		keyName = TICK_LOGGER,
-		name = "Tick logger",
-		description = "Writes every tick, animation, chat line, click and vine change to "
-			+ "~/.runelite/snake-weed-helper/ticklog-*.tsv. For measuring search timings; leave off in play.",
-		section = developerSection,
-		position = 0
-	)
-	default boolean tickLogger()
-	{
-		return false;
 	}
 }

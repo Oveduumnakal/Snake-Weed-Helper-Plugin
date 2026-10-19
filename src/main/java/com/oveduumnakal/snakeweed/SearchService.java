@@ -36,8 +36,7 @@ import net.runelite.api.gameval.ItemID;
 
 /**
  * Feeds {@link SearchTracker} from the game: the clicks that start a 3-tick search, the fletch animation, and herbs
- * arriving in the backpack. It also leaves a line in the tick log whenever the prompt changes, so a session can be
- * checked against what the game did.
+ * arriving in the backpack.
  */
 @Singleton
 class SearchService
@@ -45,19 +44,17 @@ class SearchService
 	private final Client client;
 	private final SnakeWeedHelperConfig config;
 	private final TickClock tickClock;
-	private final TickLogger tickLogger;
 	private final SearchTracker tracker = new SearchTracker();
 
 	private int lastGrimy = -1;
 	private int lastAnimation = -1;
 
 	@Inject
-	SearchService(Client client, SnakeWeedHelperConfig config, TickClock tickClock, TickLogger tickLogger)
+	SearchService(Client client, SnakeWeedHelperConfig config, TickClock tickClock)
 	{
 		this.client = client;
 		this.config = config;
 		this.tickClock = tickClock;
-		this.tickLogger = tickLogger;
 	}
 
 	/** The state of the search being followed. */
@@ -123,11 +120,8 @@ class SearchService
 		int grimy = grimyCount();
 		boolean herb = lastGrimy >= 0 && grimy > lastGrimy;
 		lastGrimy = grimy;
-		SearchPhase before = tracker.phase();
 		tracker.onTick(client.getTickCount(), me.getAnimation(), herb);
 		lastAnimation = me.getAnimation();
-		if (tracker.phase() != before)
-			tickLogger.note("PROMPT", before + " -> " + tracker.phase() + " missed=" + tracker.missed());
 	}
 
 	/** Grimy snake weed in the backpack, or the last count when the backpack is not loaded. */
