@@ -68,6 +68,7 @@ final class SearchTracker
 	private int vineClickTick = NONE;
 	private int missedUntil;
 	private int missed;
+	private boolean clickedAway;
 
 	/**
 	 * Takes in the click of a knife on mahogany logs, which starts the delay of a 3-tick search.
@@ -103,6 +104,16 @@ final class SearchTracker
 	}
 
 	/**
+	 * Takes in a click that turns the player to something else, such as a walk. During the decision tick it ends the
+	 * alert at once; whether it came in time is still told by the next tick.
+	 */
+	void clickedAway()
+	{
+		if (phase == SearchPhase.DECISION)
+			clickedAway = true;
+	}
+
+	/**
 	 * Moves on one game tick.
 	 *
 	 * @param tick      the current game tick
@@ -132,7 +143,11 @@ final class SearchTracker
 				break;
 			default:
 				if (isResolved(tick))
+				{
 					phase = SearchPhase.DECISION;
+					clickedAway = false;
+					logClickTick = NONE;
+				}
 
 				break;
 		}
@@ -142,6 +157,12 @@ final class SearchTracker
 	SearchPhase phase()
 	{
 		return phase;
+	}
+
+	/** Whether the player should be told to click away right now: the search failed and they have not yet. */
+	boolean alerting()
+	{
+		return phase == SearchPhase.DECISION && !clickedAway;
 	}
 
 	/** How many times the manual search began because the click-away was missed. */
@@ -157,6 +178,7 @@ final class SearchTracker
 		logClickTick = NONE;
 		fletchAnimationTick = NONE;
 		vineClickTick = NONE;
+		clickedAway = false;
 		missed = 0;
 	}
 
@@ -173,8 +195,6 @@ final class SearchTracker
 		{
 			phase = SearchPhase.IDLE;
 		}
-
-		logClickTick = NONE;
 	}
 
 	/** Whether this tick is when the followed search should have given its herb, and a vine was being searched. */

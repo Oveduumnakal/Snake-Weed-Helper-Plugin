@@ -43,6 +43,7 @@ import net.runelite.api.gameval.ItemID;
 class SearchService
 {
 	private final Client client;
+	private final SnakeWeedHelperConfig config;
 	private final TickClock tickClock;
 	private final TickLogger tickLogger;
 	private final SearchTracker tracker = new SearchTracker();
@@ -50,9 +51,10 @@ class SearchService
 	private int lastGrimy = -1;
 
 	@Inject
-	SearchService(Client client, TickClock tickClock, TickLogger tickLogger)
+	SearchService(Client client, SnakeWeedHelperConfig config, TickClock tickClock, TickLogger tickLogger)
 	{
 		this.client = client;
+		this.config = config;
 		this.tickClock = tickClock;
 		this.tickLogger = tickLogger;
 	}
@@ -61,6 +63,12 @@ class SearchService
 	SearchPhase phase()
 	{
 		return tracker.phase();
+	}
+
+	/** Whether to tell the player to click away right now, which is also when the vine highlights turn red. */
+	boolean alerting()
+	{
+		return config.clickAwayPrompt() && tracker.alerting();
 	}
 
 	/** How many manual searches began because the click-away was missed. */
@@ -86,7 +94,12 @@ class SearchService
 	void onClick(MenuAction action, int itemId, int objectId)
 	{
 		int tick = client.getTickCount();
-		if (action == MenuAction.WIDGET_TARGET_ON_WIDGET && (itemId == ItemID.MAHOGANY_LOGS || itemId == ItemID.KNIFE))
+		boolean logClick = action == MenuAction.WIDGET_TARGET_ON_WIDGET
+			&& (itemId == ItemID.MAHOGANY_LOGS || itemId == ItemID.KNIFE);
+		if (logClick || SearchCommitment.abandons(action))
+			tracker.clickedAway();
+
+		if (logClick)
 			tracker.logClicked(tick, tickClock.millisSinceTick());
 		else if (action == MenuAction.GAME_OBJECT_SECOND_OPTION && SnakeWeedIds.isVine(objectId))
 			tracker.vineSearched(tick);

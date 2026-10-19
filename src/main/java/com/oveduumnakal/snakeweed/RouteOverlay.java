@@ -49,14 +49,17 @@ class RouteOverlay extends Overlay
 	private final VineTracker tracker;
 	private final RouteService route;
 	private final BankReminder reminder;
+	private final SearchService search;
 
 	@Inject
-	RouteOverlay(SnakeWeedHelperConfig config, VineTracker tracker, RouteService route, BankReminder reminder)
+	RouteOverlay(SnakeWeedHelperConfig config, VineTracker tracker, RouteService route, BankReminder reminder,
+		SearchService search)
 	{
 		this.config = config;
 		this.tracker = tracker;
 		this.route = route;
 		this.reminder = reminder;
+		this.search = search;
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_SCENE);
 	}
@@ -71,7 +74,8 @@ class RouteOverlay extends Overlay
 			return null;
 
 		Shape clickbox = object.getClickbox();
-		HighlightStyle.drawRing(graphics, clickbox != null ? clickbox : object.getConvexHull(), config.targetColor());
+		Color ring = search.alerting() ? config.clickAwayColor() : config.targetColor();
+		HighlightStyle.drawRing(graphics, clickbox != null ? clickbox : object.getConvexHull(), ring);
 		graphics.setFont(FontManager.getRunescapeSmallFont());
 		Point location = object.getCanvasTextLocation(graphics, LABEL, 30);
 		if (location != null)

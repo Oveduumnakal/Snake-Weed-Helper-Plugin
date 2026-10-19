@@ -69,10 +69,9 @@ class ClickAwayOverlay extends Overlay
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		SearchPhase phase = search.phase();
-		if (phase == SearchPhase.DECISION && config.clickAwayPrompt())
+		if (search.alerting())
 			drawCentered(graphics, PROMPT, PROMPT_SIZE, config.clickAwayColor());
-		else if (phase == SearchPhase.MISSED && config.missedWarning())
+		else if (search.phase() == SearchPhase.MISSED && config.missedWarning())
 			drawCentered(graphics, MISSED + " (" + search.missed() + ")", MISSED_SIZE, MISSED_COLOR);
 
 		return null;

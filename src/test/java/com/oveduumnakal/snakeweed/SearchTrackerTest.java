@@ -90,6 +90,71 @@ public class SearchTrackerTest
 	}
 
 	@Test
+	public void clickingAwayEndsTheAlertAtOnce()
+	{
+		SearchTracker tracker = new SearchTracker();
+		tracker.logClicked(159, 64);
+		tracker.fletchAnimation(159);
+		tracker.vineSearched(159);
+		run(tracker, 159, 160, FLETCH);
+		tracker.onTick(161, FLETCH, false);
+		assertEquals(true, tracker.alerting());
+
+		tracker.clickedAway();
+
+		assertEquals(false, tracker.alerting());
+		tracker.onTick(162, FLETCH, false);
+		assertEquals(SearchPhase.IDLE, tracker.phase());
+		assertEquals(0, tracker.missed());
+	}
+
+	@Test
+	public void aClickThatCameTooLateStillCountsAsMissedWhenTheManualSearchStarts()
+	{
+		SearchTracker tracker = new SearchTracker();
+		tracker.logClicked(640, 485);
+		tracker.fletchAnimation(640);
+		tracker.vineSearched(640);
+		run(tracker, 640, 641, FLETCH);
+		tracker.onTick(642, FLETCH, false);
+
+		tracker.clickedAway();
+		tracker.onTick(643, SEARCH, false);
+
+		assertEquals(SearchPhase.MISSED, tracker.phase());
+		assertEquals(1, tracker.missed());
+	}
+
+	@Test
+	public void aClickOutsideTheDecisionTickDoesNothing()
+	{
+		SearchTracker tracker = new SearchTracker();
+		tracker.clickedAway();
+
+		assertEquals(false, tracker.alerting());
+	}
+
+	@Test
+	public void theNextSearchIsStillFollowedWhenItsLogClickCameDuringTheDecision()
+	{
+		SearchTracker tracker = new SearchTracker();
+		tracker.logClicked(159, 64);
+		tracker.fletchAnimation(159);
+		tracker.vineSearched(159);
+		run(tracker, 159, 160, FLETCH);
+		tracker.onTick(161, FLETCH, false);
+
+		tracker.logClicked(162, 50);
+		tracker.fletchAnimation(162);
+		tracker.vineSearched(162);
+		tracker.onTick(162, FLETCH, false);
+		run(tracker, 163, 163, FLETCH);
+		tracker.onTick(164, FLETCH, false);
+
+		assertEquals(SearchPhase.DECISION, tracker.phase());
+	}
+
+	@Test
 	public void theManualSearchStartingIsAMissedWindow()
 	{
 		SearchTracker tracker = new SearchTracker();

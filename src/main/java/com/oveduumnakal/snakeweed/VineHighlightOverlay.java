@@ -52,16 +52,18 @@ class VineHighlightOverlay extends Overlay
 	private final VineTracker tracker;
 	private final TickClock tickClock;
 	private final BankReminder reminder;
+	private final SearchService search;
 
 	@Inject
 	VineHighlightOverlay(Client client, SnakeWeedHelperConfig config, VineTracker tracker, TickClock tickClock,
-		BankReminder reminder)
+		BankReminder reminder, SearchService search)
 	{
 		this.client = client;
 		this.config = config;
 		this.tracker = tracker;
 		this.tickClock = tickClock;
 		this.reminder = reminder;
+		this.search = search;
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_SCENE);
 	}
@@ -74,6 +76,7 @@ class VineHighlightOverlay extends Overlay
 
 		int tick = client.getTickCount();
 		long sinceTick = tickClock.millisSinceTick();
+		Color ripe = search.alerting() ? config.clickAwayColor() : config.ripeColor();
 		double glow = config.glow() ? HighlightStyle.pulse(System.currentTimeMillis(), PULSE_MILLIS) : 1;
 		graphics.setFont(FontManager.getRunescapeSmallFont());
 		for (Vine vine : tracker.all())
@@ -84,7 +87,7 @@ class VineHighlightOverlay extends Overlay
 
 			if (vine.isSearchable())
 			{
-				HighlightStyle.draw(graphics, outline(object), config.ripeColor(), glow);
+				HighlightStyle.draw(graphics, outline(object), ripe, glow);
 				continue;
 			}
 

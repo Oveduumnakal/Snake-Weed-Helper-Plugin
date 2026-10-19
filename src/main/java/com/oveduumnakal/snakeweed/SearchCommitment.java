@@ -96,8 +96,13 @@ final class SearchCommitment
 		stillTicks = 0;
 	}
 
-	/** Whether a click is the player turning to something else: walking off or using another object, NPC or item. */
-	private static boolean abandons(MenuAction action)
+	/**
+	 * Whether a click is the player turning to something else: walking off or using another object, NPC or item.
+	 *
+	 * @param action the clicked menu action
+	 * @return true when it replaces whatever the player was doing
+	 */
+	static boolean abandons(MenuAction action)
 	{
 		switch (action)
 		{

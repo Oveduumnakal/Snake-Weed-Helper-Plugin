@@ -147,8 +147,9 @@ public interface SnakeWeedHelperConfig extends Config
 	@ConfigItem(
 		keyName = "clickAwayPrompt",
 		name = "Click-away prompt",
-		description = "In the 3-tick method, shows a large prompt on the one tick you have to click away after a "
-			+ "search that found no herb, before the manual search animation takes over.",
+		description = "In the 3-tick method, on the one tick you have to click away after a search that found no "
+			+ "herb, shows a large prompt and turns the vine highlights red, before the manual search animation "
+			+ "takes over.",
 		section = clickAwaySection,
 		position = 0
 	)
@@ -160,8 +161,9 @@ public interface SnakeWeedHelperConfig extends Config
 	@Alpha
 	@ConfigItem(
 		keyName = "clickAwayColor",
-		name = "Prompt color",
-		description = "Color of the click-away prompt.",
+		name = "Fail color",
+		description = "Color of the click-away prompt. The vine highlights and the next-vine ring turn this color "
+			+ "while it shows, then go back to normal once you have clicked away.",
 		section = clickAwaySection,
 		position = 1
 	)
