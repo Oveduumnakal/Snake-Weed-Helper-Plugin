@@ -1,4 +1,4 @@
-<h1 align="center">Snake Weed Helper</h1>
+<p align="center"><img src="docs/banner.png" alt="Snake Weed Helper" width="600"></p>
 
 Snake Weed Helper is a RuneLite plugin that makes harvesting snake weed with the 3-tick mahogany method faster and less error-prone. It shows which vines you can search, tells you the moment a search failed, and marks the best vine to search next.
 
@@ -10,6 +10,9 @@ Snake Weed Helper is a RuneLite plugin that makes harvesting snake weed with the
 
   Picked vines are greyed out with a countdown until they grow back. Ripe vines glow.
 
+  ![Ripe vines glow green, with the next one to search ringed](docs/ripe-vines-next.png)
+  ![Picked vines are grey with a countdown in seconds](docs/picked-vines-countdown.png)
+
 ### Searching
 
 - **Click-away prompt**
@@ -20,7 +23,9 @@ Snake Weed Helper is a RuneLite plugin that makes harvesting snake weed with the
 
 - **Time to Bank marker**
 
-  When your backpack is full at the vines, the vine highlights switch off and the tile under you glows gold with the label "Time to Bank". It follows you as you walk and goes away when you leave the vines or teleport.
+  When your backpack is full at the vines, the vine highlights switch off and the tile under you glows purple with the label "Time to Bank". It follows you as you walk and goes away when you leave the vines or teleport.
+
+  ![The Time to Bank tile and label under the player](docs/time-to-bank.png)
 
 - **Notify when harvested**
 
