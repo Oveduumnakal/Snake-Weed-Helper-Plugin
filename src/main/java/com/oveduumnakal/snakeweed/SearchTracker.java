@@ -69,6 +69,7 @@ final class SearchTracker
 	private int missedUntil;
 	private int missed;
 	private boolean clickedAway;
+	private boolean lockedInManualSearch;
 
 	/**
 	 * Takes in the click of a knife on mahogany logs, which starts the delay of a 3-tick search.
@@ -81,6 +82,7 @@ final class SearchTracker
 		logClickTick = tick;
 		estimatedStart = tick + (sinceTickMillis >= CUTOFF_MILLIS ? 1 : 0);
 		fletchAnimationTick = NONE;
+		lockedInManualSearch = false;
 	}
 
 	/**
@@ -90,7 +92,21 @@ final class SearchTracker
 	 */
 	void fletchAnimation(int tick)
 	{
+		fletchAnimation(tick, false);
+	}
+
+	/**
+	 * Takes in the player's animation changing to the fletch animation. A change from the manual search means the
+	 * player is still locked in a search missed earlier, so the herb that comes is that search's roll and this
+	 * cycle is not followed.
+	 *
+	 * @param tick             the tick the change was seen on
+	 * @param fromManualSearch whether the animation was the manual search just before the change
+	 */
+	void fletchAnimation(int tick, boolean fromManualSearch)
+	{
 		fletchAnimationTick = tick;
+		lockedInManualSearch = fromManualSearch;
 	}
 
 	/**
@@ -179,6 +195,7 @@ final class SearchTracker
 		fletchAnimationTick = NONE;
 		vineClickTick = NONE;
 		clickedAway = false;
+		lockedInManualSearch = false;
 		missed = 0;
 	}
 
@@ -201,7 +218,8 @@ final class SearchTracker
 	private boolean isResolved(int tick)
 	{
 		int start = start();
-		return start != NONE && tick == start + RESOLVE_TICKS && Math.abs(vineClickTick - start) <= PAIR_TICKS;
+		return !lockedInManualSearch && start != NONE && tick == start + RESOLVE_TICKS
+			&& Math.abs(vineClickTick - start) <= PAIR_TICKS;
 	}
 
 	/** L, from the animation change when it was seen on the click's tick or the next, otherwise from the click. */

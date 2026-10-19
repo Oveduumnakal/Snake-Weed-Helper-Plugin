@@ -49,6 +49,7 @@ class SearchService
 	private final SearchTracker tracker = new SearchTracker();
 
 	private int lastGrimy = -1;
+	private int lastAnimation = -1;
 
 	@Inject
 	SearchService(Client client, SnakeWeedHelperConfig config, TickClock tickClock, TickLogger tickLogger)
@@ -82,6 +83,7 @@ class SearchService
 	{
 		tracker.reset();
 		lastGrimy = -1;
+		lastAnimation = -1;
 	}
 
 	/**
@@ -108,7 +110,7 @@ class SearchService
 	/** Takes in the player's animation changing to the fletch animation. */
 	void onFletchAnimation()
 	{
-		tracker.fletchAnimation(client.getTickCount());
+		tracker.fletchAnimation(client.getTickCount(), lastAnimation == SnakeWeedIds.ANIM_SEARCH);
 	}
 
 	/** Moves the search on one tick, noting any change of the prompt in the tick log. */
@@ -123,6 +125,7 @@ class SearchService
 		lastGrimy = grimy;
 		SearchPhase before = tracker.phase();
 		tracker.onTick(client.getTickCount(), me.getAnimation(), herb);
+		lastAnimation = me.getAnimation();
 		if (tracker.phase() != before)
 			tickLogger.note("PROMPT", before + " -> " + tracker.phase() + " missed=" + tracker.missed());
 	}

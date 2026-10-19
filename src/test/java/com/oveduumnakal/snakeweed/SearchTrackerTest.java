@@ -75,6 +75,17 @@ public class SearchTrackerTest
 	}
 
 	@Test
+	public void aCycleStartedWhileStillInAMissedManualSearchNeverPrompts()
+	{
+		SearchTracker tracker = new SearchTracker();
+		tracker.logClicked(159, 64);
+		tracker.fletchAnimation(159, true);
+		tracker.vineSearched(159);
+
+		assertEquals(SearchPhase.IDLE, run(tracker, 159, 161, FLETCH));
+	}
+
+	@Test
 	public void clickingAwayInTimeClearsThePromptWithoutAMiss()
 	{
 		SearchTracker tracker = new SearchTracker();
